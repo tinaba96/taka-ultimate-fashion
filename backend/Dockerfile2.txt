@@ -1,0 +1,83 @@
+FROM golang:1.22.5
+
+WORKDIR /go/src
+
+COPY go* ./
+RUN go mod download
+
+
+RUN apt-get update && apt-get install -y unzip
+RUN apt-get -y update
+# RUN apt-get install -y google-chrome-stable
+
+# 必要なパッケージをインストール
+RUN apt-get update && apt-get install -y \
+    wget \
+    unzip \
+    curl \
+    gnupg \
+    chromium \
+    chromium-driver
+
+# パスを通す
+ENV PATH="/usr/lib/chromium:${PATH}"
+
+
+# Chrome
+# RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add && \
+# wget http://dl.google.com/linux/deb/pool/main/g/google-chrome-unstable/google-chrome-unstable_97.0.4692.20-1_amd64.deb && \
+# apt-get install -y -f ./google-chrome-unstable_97.0.4692.20-1_amd64.deb
+
+# ChromeDriver
+# ADD https://chromedriver.storage.googleapis.com/97.0.4692.20/chromedriver_linux64.zip /opt/chrome/
+# RUN cd /opt/chrome/ && \
+# unzip chromedriver_linux64.zip
+
+# ENV PATH /opt/chrome:$PATH
+
+
+COPY . .
+
+
+# # ベースとなるDockerイメージ指定
+# FROM golang:latest
+
+# # コンテナログイン時のディレクトリ指定
+# WORKDIR /work
+
+# # COPY ./src/go.mod /work
+# # COPY ./src/go.sum /work
+# COPY . .
+
+# RUN go mod download
+
+# RUN apt-get update && apt-get install -y unzip
+
+# # Chrome
+# RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add && \
+# wget http://dl.google.com/linux/deb/pool/main/g/google-chrome-unstable/google-chrome-unstable_97.0.4692.20-1_amd64.deb && \
+# apt-get install -y -f ./google-chrome-unstable_97.0.4692.20-1_amd64.deb
+
+# # ChromeDriver
+# ADD https://chromedriver.storage.googleapis.com/97.0.4692.20/chromedriver_linux64.zip /opt/chrome/
+# RUN cd /opt/chrome/ && \
+# unzip chromedriver_linux64.zip
+
+# ENV PATH /opt/chrome:$PATH
+
+
+# FROM golang:1.22.5 as builder
+
+# WORKDIR /app
+# COPY go.* ./
+# RUN go mod download
+
+# COPY . ./
+
+# RUN go build -v -o server
+
+# FROM chromedp/headless-shell:latest
+
+# COPY --from=builder /app/server /app/server
+
+# CMD ["/app/server"]
