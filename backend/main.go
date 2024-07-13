@@ -15,10 +15,13 @@ import (
 
 	"github.com/sclevine/agouti"
 )
+
 type Product struct {
+	ID       uint `gorm:"primaryKey"`
+	Name     string
+	Price    string
+	ImageURL string
 	gorm.Model
-	Name  string
-	Price uint
 }
 
 type DBConfig struct {
@@ -53,11 +56,11 @@ func main() {
 	// Migrate the schema
 	db.AutoMigrate(&Product{})
 	// Create
-	db.Create(&Product{Name: "TSHIRT", Price: 100})
+	// db.Create(&Product{Name: "TSHIRT", Price: 100})
 
-	var product Product
-	db.First(&product, "Name = ?", "TSHIRT") // find product with code D42
-	fmt.Println(product)
+	// var product Product
+	// db.First(&product, "Name = ?", "TSHIRT") // find product with code D42
+	// fmt.Println(product)
 
 
 
@@ -126,13 +129,52 @@ func main() {
 	// listDom := contentsDom.Find("ul").Children()                       // selector - Enter the selector for the select box in the selector part. Get all the child elements in the select box
 	// log.Println("[SELECTOR]", listDom)
 	
-	contentsDom.Find("div img").Each(func(_ int, s *goquery.Selection) {
-		url, _ := s.Attr("alt")
-		// fmt.Println(url)
-		fmt.Printf("ALT : %s\n", url)
+	// contentsDom.Find("div img").Each(func(_ int, s *goquery.Selection) {
+	// 	url, _ := s.Attr("alt")
+	// 	// fmt.Println(url)
+	// 	fmt.Printf("ALT : %s\n", url)
+	// })
+	// contentsDom.Find("div.category-page-1r1wcud").Each(func(_ int, s *goquery.Selection) {
+	// 	text := s.Text()
+	// 	fmt.Printf("Text: %s\n", text)
+	// })
+	// contentsDom.Find("span.product-price--pdp.product-price__same-line").Each(func(_ int, s *goquery.Selection) {
+	// contentsDom.Find("div.product-price__highlight").Each(func(_ int, s *goquery.Selection) {
+	// 	price := s.Text()
+	// 	fmt.Printf("Price: %s\n", price)
+	// })
+
+	contentsDom.Find(".cat_product-image").Each(func(i int, s *goquery.Selection) {
+		imgSrc, _ := s.Find("img").Attr("src")
+		productName := s.Next().Find("div.category-page-1r1wcud").Text()
+		price := s.Next().Next().Find("div.product-price__highlight").Text()
+
+		product := Product{
+			Name:     productName,
+			Price:    price,
+			ImageURL: imgSrc,
+		}
+
+		if err := db.Create(&product).Error; err != nil {
+			log.Printf("Failed to save product: %v", err)
+		} else {
+			fmt.Printf("Saved Product: %s, Price: %s, Image Src: %s\n", productName, price, imgSrc)
+		}
+
+		fmt.Printf("Product: %s, Price: %s, Image Src: %s\n", productName, price, imgSrc)
 	})
-	contentsDom.Find("div.category-page-1r1wcud").Each(func(_ int, s *goquery.Selection) {
-		text := s.Text()
-		fmt.Printf("Text: %s\n", text)
-	})
+	
+	
+	// Find("a.css-0").Each(func(i int, s *goquery.Selection) {
+	// 	productName := s.Find("div.category-page-1r1wcud").Text()
+	// 	price := s.Next().Find("div.product-price__highlight").Text()
+
+	// 	// 結果を出力
+	// 	fmt.Printf("Product: %s, Price: %s\n", productName, price)
+	// })
+
+
+
+
+	log.Println("--- DONE ---")
 }
