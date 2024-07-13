@@ -1,0 +1,54 @@
+version: "3.8"
+services:
+  db:
+    image: mysql:8.0.27
+    platform: linux/amd64
+    container_name: db
+    env_file:
+      - .env
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - 3888:3306
+    networks:
+      - taka-network
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  backend:
+    platform: linux/amd64
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - ./backend/:/go/src/
+    ports:
+      - "8888:8080"
+    networks:
+      - taka-network
+    depends_on:
+      - db
+    tty: true
+    stdin_open: true
+
+  frontend:
+    platform: linux/amd64
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/usr/src/app
+    ports:
+      - "4000:3000"
+    tty: true
+    stdin_open: true
+volumes:
+  mysql_data:
+
+networks:
+  taka-network:
