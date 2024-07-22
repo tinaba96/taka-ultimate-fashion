@@ -12,16 +12,26 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/tinaba96/taka-ultimate-fashion/backend/router"
 
 	"github.com/sclevine/agouti"
 )
 
 type Product struct {
-	ID       uint `gorm:"primaryKey"`
-	Name     string
-	Price    string
-	ImageURL string
-	gorm.Model
+    ID         uint   `gorm:"primaryKey"`
+    Name       string
+    Price      string
+    ImageURL   string
+	CategoryID uint
+	Category   Category
+    // Category   Category `gorm:"foreignKey:CategoryID;references:ID"`
+    gorm.Model
+}
+
+type Category struct {
+    ID   uint   `gorm:"primaryKey"`
+    Name string
+    gorm.Model
 }
 
 type DBConfig struct {
@@ -45,7 +55,15 @@ func getDBConfig() DBConfig {
 
 
 func main() {
+	// ====== API =======
+	log.Println("start server...")
+	router := router.SetRouter()
+	if err := router.Run(":8080"); err != nil {
+		log.Fatal(err)
+	}
+
 	// ====== DB Connections =======
+	// https://qiita.com/Alphard/items/5239c2707b1557f76c9a#maingo
 	config := getDBConfig();
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True", config.User, config.Password, config.Host, config.Port, config.Table)
 	// dsn := "user:password@tcp(db:3306)/taka_database?charset=utf8mb4&parseTime=True&loc=Local"
@@ -54,9 +72,16 @@ func main() {
 		panic("failed to connect database")
 	}
 	// Migrate the schema
-	db.AutoMigrate(&Product{})
-	// Create
-	// db.Create(&Product{Name: "TSHIRT", Price: 100})
+	db.AutoMigrate(&Product{}, &Category{})
+	// Master Category Data
+	db.Create(&Category{Name: "T-SHIRTS"})
+    db.Create(&Category{Name: "SWIMWEAR"})
+	db.Create(&Category{Name: "SHIRTS"})
+	db.Create(&Category{Name: "JEANS"})
+    db.Create(&Category{Name: "SHORTS"})
+    db.Create(&Category{Name: "PANTS"})
+    db.Create(&Category{Name: "GRAPHIC T-SHIRTS"})
+    db.Create(&Category{Name: "ACTIVEWEAR"})
 
 	// var product Product
 	// db.First(&product, "Name = ?", "TSHIRT") // find product with code D42
@@ -65,7 +90,8 @@ func main() {
 
 
 	// ====== start scraping =======
-	url := "https://oldnavy.gapcanada.ca/browse/category.do?cid=5249&mlink=5155,1,m_5" // specify the URL
+	// url := "https://oldnavy.gapcanada.ca/browse/category.do?cid=5249&mlink=5155,1,m_5" // specify the URL
+	url := "https://oldnavy.gapcanada.ca/browse/category.do?cid=5199&mlink=5155,1,m_6"
 
 	// driver := agouti.ChromeDriver()                                // Start the driver
 	driver := agouti.ChromeDriver(
@@ -126,33 +152,22 @@ func main() {
 
 	readerCurContents := strings.NewReader(curContentsDom)
 	contentsDom, _ := goquery.NewDocumentFromReader(readerCurContents) // Get the DOM of the currently open page in the browser
-	// listDom := contentsDom.Find("ul").Children()                       // selector - Enter the selector for the select box in the selector part. Get all the child elements in the select box
-	// log.Println("[SELECTOR]", listDom)
 	
-	// contentsDom.Find("div img").Each(func(_ int, s *goquery.Selection) {
-	// 	url, _ := s.Attr("alt")
-	// 	// fmt.Println(url)
-	// 	fmt.Printf("ALT : %s\n", url)
-	// })
-	// contentsDom.Find("div.category-page-1r1wcud").Each(func(_ int, s *goquery.Selection) {
-	// 	text := s.Text()
-	// 	fmt.Printf("Text: %s\n", text)
-	// })
-	// contentsDom.Find("span.product-price--pdp.product-price__same-line").Each(func(_ int, s *goquery.Selection) {
-	// contentsDom.Find("div.product-price__highlight").Each(func(_ int, s *goquery.Selection) {
-	// 	price := s.Text()
-	// 	fmt.Printf("Price: %s\n", price)
-	// })
 
 	contentsDom.Find(".cat_product-image").Each(func(i int, s *goquery.Selection) {
 		imgSrc, _ := s.Find("img").Attr("src")
 		productName := s.Next().Find("div.category-page-1r1wcud").Text()
 		price := s.Next().Next().Find("div.product-price__highlight").Text()
 
+		var productCategory Category
+		// db.FirstOrCreate(&productCategory, Category{Name: "T-SHIRTS"}) 
+		db.FirstOrCreate(&productCategory, Category{Name: "JEANS"}) 
+
 		product := Product{
 			Name:     productName,
 			Price:    price,
 			ImageURL: imgSrc,
+			CategoryID: productCategory.ID,
 		}
 
 		if err := db.Create(&product).Error; err != nil {
@@ -165,16 +180,6 @@ func main() {
 	})
 	
 	
-	// Find("a.css-0").Each(func(i int, s *goquery.Selection) {
-	// 	productName := s.Find("div.category-page-1r1wcud").Text()
-	// 	price := s.Next().Find("div.product-price__highlight").Text()
-
-	// 	// 結果を出力
-	// 	fmt.Printf("Product: %s, Price: %s\n", productName, price)
-	// })
-
-
-
-
 	log.Println("--- DONE ---")
+
 }
