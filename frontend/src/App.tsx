@@ -1,5 +1,7 @@
 import React from 'react';
 import './styles/global.css';
+import './input.css';
+import './styles/tailwind.css';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './pages/home';
 import Header from './layouts/header';
