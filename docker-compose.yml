@@ -20,6 +20,7 @@ services:
 
   backend:
     platform: linux/amd64
+    image: 010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf-backend
     build:
       context: ./backend/
       dockerfile: Dockerfile
@@ -38,9 +39,12 @@ services:
 
   frontend:
     platform: linux/amd64
+    image: 010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf-frontend
     build:
       context: ./frontend/
       dockerfile: Dockerfile
+    env_file:
+      - .env
     volumes:
       - ./frontend:/usr/src/app
     ports:

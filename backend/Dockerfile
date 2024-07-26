@@ -28,4 +28,10 @@ RUN go get github.com/mattn/go-sqlite3
 # RUN go mod tidy
 # RUN go mod download
 
+
 COPY . .
+
+CMD ["go", "run", "main.go"]
+
+# EXPOSE 8080
+

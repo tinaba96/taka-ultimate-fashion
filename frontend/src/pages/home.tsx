@@ -39,6 +39,8 @@ type Dictionary = {
   [key: number]: number;
 };
 
+const apiUrl = process.env.REACT_APP_API_URL;
+
 const Home: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
     const [products, setProducts] = useState<Product[]>([])
@@ -48,7 +50,7 @@ const Home: React.FC = () => {
     // const [categories, setCategories] = useState<string[]>([]);
 
     useEffect(() => {
-      fetch('http://localhost:8888/getSave')
+      fetch(`${apiUrl}/getSave`)
       .then(response => response.json())
       .then((data: HeartResponse) => {
           var saveProducts = data.datas
@@ -70,7 +72,7 @@ const Home: React.FC = () => {
       setCategories(selectedOption as Option[]);
       const selectedCategories = (Array.isArray(selectedOption) && selectedOption !== null && selectedOption.length !== 0) ? selectedOption.map(option => option.value) : []
       // setCategories(selectedCategories as string[])
-      fetch(`http://localhost:8888/products?categories=${selectedCategories}`)
+      fetch(`${apiUrl}/products?categories=${selectedCategories}`)
         .then(response => response.json())
         .then((data: DataResponse) => {
             setProducts(data.datas)
@@ -85,15 +87,16 @@ const Home: React.FC = () => {
       const handleClick = async (e: React.MouseEvent<HTMLImageElement>, product_id:number) => {
         e.preventDefault();
         
+        console.log(heart[product_id])
+
         const data = {
           ProductID: product_id,
-          Status: 3
-          // Status: heart[product_id] === 0 ? 1 : 0
+          Status: heart[product_id] === 1 ? 0 : 1
         };
         console.log(data)
     
         try {
-          const res = await fetch('http://localhost:8888/save', {
+          const res = await fetch(`${apiUrl}/save`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -108,7 +111,7 @@ const Home: React.FC = () => {
 
 
         // update heat
-        fetch('http://localhost:8888/getSave')
+        fetch(`${apiUrl}/getSave`)
         .then(response => response.json())
         .then((data: HeartResponse) => {
             var saveProducts = data.datas
@@ -133,7 +136,7 @@ const Home: React.FC = () => {
     const headerText = (categories !== null && categories?.length !== 0) ? categories.map(category => category.value).join(' & ') : "ALL";
 
     useEffect(() => {
-        fetch('http://localhost:8888/products')
+      fetch(`${apiUrl}/products`)
         .then(response => response.json())
         .then((data: DataResponse) => {
             setProducts(data.datas)

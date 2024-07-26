@@ -23,12 +23,14 @@ interface AIModalProps {
     setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
   }
 
+const apiUrl = process.env.REACT_APP_API_URL;
+
 const AIModal: React.FC<AIModalProps> = ({ showModal, setShowModal }) => {
 //   const [showModal, setShowModal] = useState<boolean>(false);
   const [save, setSaves]  = useState<Product[]>([])
 
   useEffect(() => {
-    fetch('http://localhost:8888/getSave')
+    fetch(`${apiUrl}/getSave`)
     .then(response => response.json())
     .then((data: SaveResponse) => {
         var saveProducts = data.datas.map((d: Save) => d.Product)
@@ -40,23 +42,10 @@ const AIModal: React.FC<AIModalProps> = ({ showModal, setShowModal }) => {
 },[])
 
 
-//   // 削除の実行処理
-//   const deleteAction = async (docid: string) => {
-//     …
-//   };
-
-  const handleOpenModal = () => {
-    setShowModal(true);
-  };
-
   const handleDeleteAction = () => {
-    // deleteAction();
     setShowModal(false);
   };
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
 
   const closeModal = () => setShowModal(false);
 
@@ -86,9 +75,9 @@ const AIModal: React.FC<AIModalProps> = ({ showModal, setShowModal }) => {
                   <div key={product.ID} className="group relative">
                   <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-80">
                       <img
-                      alt={product.Name}
-                      src={`https://oldnavy.gapcanada.ca/${product.ImageURL}`}
-                      className="h-full w-full object-cover object-center lg:h-full lg:w-full"
+                        alt={product.Name}
+                        src={`https://oldnavy.gapcanada.ca/${product.ImageURL}`}
+                        className="h-full w-full object-cover object-center lg:h-full lg:w-full"
                       />
                   </div>
                   <div className="mt-4 flex justify-between">
