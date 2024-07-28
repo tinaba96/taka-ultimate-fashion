@@ -5,7 +5,12 @@ import AIModal from '../components/ai_modal';
 const options: Option[] = [
     { value: "JEANS", label: "JEANS" },
     { value: "T-SHIRTS", label: "T-SHIRTS" },
-    { value: "Honeybee", label: "🐝 Honeybee" }
+    { value: "SWIMWEAR", label: "SWIMWEAR" },
+    { value: "SHIRTS", label: "SHIRTS" },
+    { value: "SHORTS", label: "SHORTS" },
+    { value: "PANTS", label: "PANTS" },
+    { value: "GRAPHIC T-SHIRTS", label: "GRAPHIC T-SHIRTS" },
+    { value: "ACTIVEWEAR", label: "ACTIVEWEAR" },
 ];
 interface Option {
     value: string;
@@ -87,13 +92,10 @@ const Home: React.FC = () => {
       const handleClick = async (e: React.MouseEvent<HTMLImageElement>, product_id:number) => {
         e.preventDefault();
         
-        console.log(heart[product_id])
-
         const data = {
           ProductID: product_id,
           Status: heart[product_id] === 1 ? 0 : 1
         };
-        console.log(data)
     
         try {
           const res = await fetch(`${apiUrl}/save`, {
@@ -152,7 +154,7 @@ const Home: React.FC = () => {
       <AIModal showModal={showModal} setShowModal={setShowModal} />
         <div className="max-w-2xl mx-auto py-0 sm:px-6 sm:py-16 lg:max-w-7xl lg:px-8">
             <div className="flex items-center space-x-4">
-                <span>SEARCH </span>
+                <span>SEARCH</span>
                 <Select
                     primaryColor={"indigo"}
                     value={categories}
@@ -181,7 +183,7 @@ const Home: React.FC = () => {
                   <div className="mt-4 flex justify-between">
                       <div>
                       <h3 className="text-sm text-gray-700">
-                          <a href={product.ImageURL}>
+                        <a href={`https://oldnavy.gapcanada.ca/${product.ImageURL}`}>
                           {product.Name}
                           </a>
   <svg className="h-5 w-5 text-red-500"  viewBox="0 0 24 24"  fill={heart[product.ID] === 1 ? "currentColor" : "none"}  stroke="currentColor"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round">  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
