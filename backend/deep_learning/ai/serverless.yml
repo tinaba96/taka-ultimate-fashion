@@ -1,0 +1,12 @@
+service: tf-test
+
+provider:
+  name: aws
+  stage: dev
+  region: us-east-1
+
+functions:
+  hello:
+    image: 010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:57b51592b0292e1ddbc720bfeaad546a3ce204c5e194995703c9b6a2fe6dc342
+    memorySize: 2048
+    timeout: 180
