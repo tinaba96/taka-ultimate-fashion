@@ -1,6 +1,9 @@
 package model
 
 import (
+	"fmt"
+	"strconv"
+
 	"github.com/tinaba96/taka-ultimate-fashion/backend/database"
 	"gorm.io/gorm"
 )
@@ -8,7 +11,7 @@ import (
 type Product struct {
 	ID       uint `gorm:"primaryKey"`
 	Name     string
-	Price    string
+	Price    string `gorm:"unique"`
 	ImageURL string
 	gorm.Model
 }
@@ -52,7 +55,47 @@ func GetAll() (products []Product) {
 	// return result
 }
 
-func GetByCategories(categoryNames []string) ([]Product, error) {
+func GetByCategories(categoryNames []string, minPrice string, maxPrice string) ([]Product, error) {
+	db := database.GetDB()
+
+	var categories []Category
+	if err := db.Where("name IN ?", categoryNames).Find(&categories).Error; err != nil {
+		return nil, err
+	}
+
+	if (len(categories) == 0 && minPrice == "" && maxPrice == "") {
+		return nil, nil
+	}
+
+	var categoryIDs []uint
+	for _, category := range categories {
+		categoryIDs = append(categoryIDs, category.ID)
+	}
+
+	minPriceInt, err := strconv.ParseFloat(minPrice, 64)
+    if err != nil {
+        return nil, fmt.Errorf("invalid minPrice value: %w", err)
+    }
+	maxPriceInt, err := strconv.ParseFloat(maxPrice, 64)
+    if err != nil {
+        return nil, fmt.Errorf("invalid maxPrice value: %w", err)
+    }
+
+
+	var products []Product
+	if len(categoryIDs) == 0 {
+	if err := db.Where("CAST(price AS DECIMAL(10,2)) BETWEEN ? AND ?", minPriceInt, maxPriceInt).Find(&products).Error; err != nil {
+		return nil, err
+	}
+	}else{
+	if err := db.Where("category_id IN ?", categoryIDs).Where("CAST(price AS DECIMAL(10,2)) BETWEEN ? AND ?", minPriceInt, maxPriceInt).Find(&products).Error; err != nil {
+		return nil, err
+	}
+}
+	return products, nil
+}
+
+func GetByCostRange(categoryNames []string) ([]Product, error) {
 	db := database.GetDB()
 
 	var categories []Category
@@ -73,7 +116,5 @@ func GetByCategories(categoryNames []string) ([]Product, error) {
 	if err := db.Where("category_id IN ?", categoryIDs).Find(&products).Error; err != nil {
 		return nil, err
 	}
-
 	return products, nil
-
 }

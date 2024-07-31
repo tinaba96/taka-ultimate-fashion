@@ -14,6 +14,8 @@ func ShowAllProducts(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	categoryNames := c.DefaultQuery("categories", "")
+	minPrice := c.DefaultQuery("minPrice", "")
+	maxPrice := c.DefaultQuery("maxPrice", "")
 
 // 	var datas = []gin.H{
 // 		{"ID":      91212,
@@ -26,12 +28,12 @@ func ShowAllProducts(c *gin.Context) {
 // 		"price":    "$135"},
 // }
 	// log.Println("Ping endpoint was hit")
-	if categoryNames == "" {
+	if categoryNames == "" && minPrice == "" && maxPrice == "" {
 		datas := model.GetAll()
 		c.JSON(200, gin.H{"datas": datas})
 	}else{
 		categoryList := strings.Split(categoryNames, ",")
-		datas, err := model.GetByCategories(categoryList)
+		datas, err := model.GetByCategories(categoryList, minPrice, maxPrice)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Categories not found"})
 			return

@@ -30,7 +30,7 @@ type Product struct {
     ID         uint   `gorm:"primaryKey"`
     Name       string
     Price      string
-    ImageURL   string
+    ImageURL   string `gorm:"unique"`
 	CategoryID uint
 	Category   Category
     // Category   Category `gorm:"foreignKey:CategoryID;references:ID"`
@@ -85,8 +85,8 @@ func Scraper() {
 	log.Println("start scraping.....")
 
 	// ====== start scraping =======
-	url := "https://oldnavy.gapcanada.ca/browse/category.do?cid=5249&mlink=5155,1,m_5" // specify the URL
-	// url := "https://oldnavy.gapcanada.ca/browse/category.do?cid=5199&mlink=5155,1,m_6"
+	// url := "https://oldnavy.gapcanada.ca/browse/category.do?cid=5249&mlink=5155,1,m_5" // specify the URL
+	url := "https://oldnavy.gapcanada.ca/browse/category.do?cid=5199&mlink=5155,1,m_6"
 
 	// driver := agouti.ChromeDriver()                                // Start the driver
 	driver := agouti.ChromeDriver(
@@ -125,12 +125,12 @@ func Scraper() {
 		log.Println("accessed to URL")
 
 		// Scroll down to load more content
-		for i := 0; i < 5; i++ {
+		for i := 0; i < 10; i++ {
 			err = page.RunScript("window.scrollTo(0, document.body.scrollHeight);", nil, nil)
 			if err != nil {
 				log.Fatalf("Failed to scroll: %v", err)
 			}
-			time.Sleep(3 * time.Second) // Wait for new content to load
+			time.Sleep(5 * time.Second) // Wait for new content to load
 		}
 
 		log.Println("Retrieving HTML content...")
@@ -158,28 +158,30 @@ func Scraper() {
 			price := s.Next().Next().Find("div.product-price__highlight").Text()
 
 			var productCategory Category
-			db.FirstOrCreate(&productCategory, Category{Name: "T-SHIRTS"}) 
-			// db.FirstOrCreate(&productCategory, Category{Name: "JEANS"}) 
+			// db.FirstOrCreate(&productCategory, Category{Name: "T-SHIRTS"}) 
+			db.FirstOrCreate(&productCategory, Category{Name: "JEANS"}) 
 
 			product := Product{
 				Name:     productName,
-				Price:    price,
+				Price:    strings.Replace(price, "CA$", "", 1),
 				ImageURL: imgSrc,
 				CategoryID: productCategory.ID,
 			}
 
-			if err := db.Create(&product).Error; err != nil {
-				log.Printf("Failed to save product: %v", err)
-			} else {
-				fmt.Printf("Saved Product: %s, Price: %s, Image Src: %s\n", productName, price, imgSrc)
-		im := `https://oldnavy.gapcanada.ca/`+imgSrc
-		saveimg(int(product.ID), im)
-		// log.Println(im)
-		s3Upload.UploadToS3(int(product.ID))
-	
+			fmt.Printf("Price: %s",price)
+			if price != "" {
+				if err := db.Create(&product).Error; err != nil {
+					log.Printf("Failed to save product: %v", err)
+				} else {
+					fmt.Printf("Saved Product: %s, Price: %s, Image Src: %s\n", productName, price, imgSrc)
+					im := `https://oldnavy.gapcanada.ca/`+imgSrc
+					saveimg(int(product.ID), im)
+					// log.Println(im)
+					s3Upload.UploadToS3(int(product.ID))
+				}
+				fmt.Printf("Product: %s, Price: %s, Image Src: %s\n", productName, price, imgSrc)
 			}
 
-			fmt.Printf("Product: %s, Price: %s, Image Src: %s\n", productName, price, imgSrc)
 		})
 
 		log.Println("Scraping Completed")

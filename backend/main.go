@@ -18,7 +18,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/tinaba96/taka-ultimate-fashion/backend/router"
-	"github.com/tinaba96/taka-ultimate-fashion/backend/scraper"
 	"gorm.io/driver/mysql"
 )
 
@@ -26,7 +25,7 @@ type Product struct {
     ID         uint   `gorm:"primaryKey"`
     Name       string
     Price      string
-    ImageURL   string
+    ImageURL   string `gorm:"unique"`
 	CategoryID uint
 	Category   Category
     // Category   Category `gorm:"foreignKey:CategoryID;references:ID"`
@@ -128,7 +127,7 @@ func main() {
 	// }
 
 
-	scraper.Scraper()
+	// scraper.Scraper()
 		
 	
 	// db.FirstOrCreate(&Save{ProductID: 12, Status: 1}) 
