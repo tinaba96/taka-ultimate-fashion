@@ -22,6 +22,9 @@ RUN go get github.com/PuerkitoBio/goquery
 RUN go get github.com/gin-gonic/gin
 RUN go get github.com/jinzhu/gorm
 RUN go get github.com/mattn/go-sqlite3
+RUN go get github.com/aws/aws-sdk-go-v2/aws
+RUN go get github.com/aws/aws-sdk-go-v2/config
+RUN go get github.com/aws/aws-sdk-go-v2/service/s3
 # RUN go get -u github.com/cosmtrek/air && \
 #     go build -o /go/bin/air github.com/cosmtrek/air
 

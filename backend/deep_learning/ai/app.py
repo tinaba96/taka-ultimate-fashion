@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import boto3
 import time
+import json
 
 
 s3_client = boto3.client('s3')
@@ -22,18 +23,28 @@ def cos_sim(v1, v2):
 
 
 def handler(event, context):
+    products = []
+    response = boto3.client('lambda').invoke(
+        FunctionName = 'test2',
+        InvocationType='RequestResponse'
+    )
+    rds = json.loads(response['Payload'].read())
+    time.sleep(5) 
     OBJECT_KEY_NAME = 'products-images/product_image_'+'1128'+'.jpg'
     response = s3_client.get_object(Bucket=BUCKET_NAME, Key=OBJECT_KEY_NAME)
     body = response['Body'].read()
-    # print(body)
-    # img = image2vec(body)
-    # s3 = boto3.resource('s3')
-    # bucket = s3.Bucket(BUCKET_NAME)
-    # time.sleep(10) 
-    # obj = bucket.Object(OBJECT_KEY_NAME).get()
-    # body = obj['Body'].read()
     img = image2vec(body)
-    print(img)
+    for i in rds['body']:
+        products.append(i[0])
+        OBJECT_KEY_NAME2 = 'products-images/product_image_'+str(i)+'.jpg'
+        response2 = s3_client.get_object(Bucket=BUCKET_NAME, Key=OBJECT_KEY_NAME2)
+        body2 = response2['Body'].read()
+        img2 = image2vec(body2)
+        diff = cos_sim(img, img2)
+        print(diff)
+    
+        # print(img)
+        # print(rds)
     return {
         'statusCode': 200,
         'body':

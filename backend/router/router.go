@@ -50,6 +50,11 @@ func SetRouter() *gin.Engine {
 //                 "color":    "Black",},
 // })
 //     })
+    // r.GET("/", func(c *gin.Context) {
+    //     // for test
+    //     c.String(200, "Hello, this is a test response!")
+    // })
+
     r.GET("/products", controller.ShowAllProducts)
     r.GET("/getSave", controller.GetSave)
     r.POST("/save", controller.SaveProduct)

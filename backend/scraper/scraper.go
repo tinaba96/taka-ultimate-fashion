@@ -14,10 +14,14 @@ import (
 import (
 	"fmt"
 	"log"
+	"net/http"
+	"os/exec"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	s3Upload "github.com/tinaba96/taka-ultimate-fashion/backend/s3"
+
 	"github.com/sclevine/agouti"
 	"gorm.io/driver/mysql"
 )
@@ -78,10 +82,6 @@ func Scraper() {
 		panic("failed to connect database")
 	}
 
-	// var product Product
-	// db.First(&product, "Name = ?", "TSHIRT") // find product with code D42
-	// fmt.Println(product)
-	
 	log.Println("start scraping.....")
 
 	// ====== start scraping =======
@@ -101,79 +101,166 @@ func Scraper() {
 		// agouti.Debug,  // Local only
 	)
 
-	log.Println("start")
-	err := driver.Start()
-	if err != nil {
-		log.Printf("Error starting driver: %v", err.Error())
-	}
-	defer driver.Stop()
+	confirmation := confirmurl(url)
+    if confirmation {
 
-	page, err := driver.NewPage(agouti.Browser("chrome")) // Start Chrome and return a page type value (session)
-	if err != nil {
-		log.Printf("Error creating new page: %v", err.Error())
-	}
-	time.Sleep(3 * time.Second)
-
-	err = page.Navigate(url) // Access the specified URL
-	if err != nil {
-		log.Printf("Error navigating to job post link: %v", err.Error())
-	}
-	time.Sleep(3 * time.Second)
-	log.Println("end")
-
-	// Scroll down to load more content
-	for i := 0; i < 5; i++ {
-		err = page.RunScript("window.scrollTo(0, document.body.scrollHeight);", nil, nil)
+		log.Println("start")
+		err := driver.Start()
 		if err != nil {
-			log.Fatalf("Failed to scroll: %v", err)
+			log.Printf("Error starting driver: %v", err.Error())
 		}
-		time.Sleep(3 * time.Second) // Wait for new content to load
-	}
+		defer driver.Stop()
 
-	log.Println("Retrieving HTML content...")
+		page, err := driver.NewPage(agouti.Browser("chrome")) // Start Chrome and return a page type value (session)
+		if err != nil {
+			log.Printf("Error creating new page: %v", err.Error())
+		}
+		time.Sleep(3 * time.Second)
 
-	curContentsDom, err := page.HTML()
-	if err != nil {
-		log.Printf("Failed to get html: %v", err)
-	}
+		err = page.Navigate(url) // Access the specified URL
+		if err != nil {
+			log.Printf("Error navigating to job post link: %v", err.Error())
+		}
+		time.Sleep(3 * time.Second)
+		log.Println("accessed to URL")
 
-	// Write the HTML to output.txt
-	err = os.WriteFile("output.txt", []byte(curContentsDom), 0644)
-	if err != nil {
-		log.Printf("Failed to write to file: %v", err)
-		return
-	}
-	log.Println("HTML content written to output.txt")
+		// Scroll down to load more content
+		for i := 0; i < 5; i++ {
+			err = page.RunScript("window.scrollTo(0, document.body.scrollHeight);", nil, nil)
+			if err != nil {
+				log.Fatalf("Failed to scroll: %v", err)
+			}
+			time.Sleep(3 * time.Second) // Wait for new content to load
+		}
 
-	readerCurContents := strings.NewReader(curContentsDom)
-	contentsDom, _ := goquery.NewDocumentFromReader(readerCurContents) // Get the DOM of the currently open page in the browser
+		log.Println("Retrieving HTML content...")
+
+		curContentsDom, err := page.HTML()
+		if err != nil {
+			log.Printf("Failed to get html: %v", err)
+		}
+
+		// Write the HTML to output.txt
+		// err = os.WriteFile("output.txt", []byte(curContentsDom), 0644)
+		// if err != nil {
+		// 	log.Printf("Failed to write to file: %v", err)
+		// 	return
+		// }
+		// log.Println("HTML content written to output.txt")
+
+		readerCurContents := strings.NewReader(curContentsDom)
+		contentsDom, _ := goquery.NewDocumentFromReader(readerCurContents) // Get the DOM of the currently open page in the browser
+		
+
+		contentsDom.Find(".cat_product-image").Each(func(i int, s *goquery.Selection) {
+			imgSrc, _ := s.Find("img").Attr("src")
+			productName := s.Next().Find("div.category-page-1r1wcud").Text()
+			price := s.Next().Next().Find("div.product-price__highlight").Text()
+
+			var productCategory Category
+			db.FirstOrCreate(&productCategory, Category{Name: "T-SHIRTS"}) 
+			// db.FirstOrCreate(&productCategory, Category{Name: "JEANS"}) 
+
+			product := Product{
+				Name:     productName,
+				Price:    price,
+				ImageURL: imgSrc,
+				CategoryID: productCategory.ID,
+			}
+
+			if err := db.Create(&product).Error; err != nil {
+				log.Printf("Failed to save product: %v", err)
+			} else {
+				fmt.Printf("Saved Product: %s, Price: %s, Image Src: %s\n", productName, price, imgSrc)
+		im := `https://oldnavy.gapcanada.ca/`+imgSrc
+		saveimg(int(product.ID), im)
+		// log.Println(im)
+		s3Upload.UploadToS3(int(product.ID))
 	
+			}
 
-	contentsDom.Find(".cat_product-image").Each(func(i int, s *goquery.Selection) {
-		imgSrc, _ := s.Find("img").Attr("src")
-		productName := s.Next().Find("div.category-page-1r1wcud").Text()
-		price := s.Next().Next().Find("div.product-price__highlight").Text()
+			fmt.Printf("Product: %s, Price: %s, Image Src: %s\n", productName, price, imgSrc)
+		})
 
-		var productCategory Category
-		db.FirstOrCreate(&productCategory, Category{Name: "T-SHIRTS"}) 
-		// db.FirstOrCreate(&productCategory, Category{Name: "JEANS"}) 
+		log.Println("Scraping Completed")
+	}
 
-		product := Product{
-			Name:     productName,
-			Price:    price,
-			ImageURL: imgSrc,
-			CategoryID: productCategory.ID,
-		}
+	// // sess, _ := session.NewSession(&aws.Config{
+	// // 	Region: aws.String("us-west-1")},
+	// // )
+	// sess := session.Must(session.NewSessionWithOptions(session.Options{
+	// 	// Profile:           "di",
+	// 	SharedConfigState: session.SharedConfigEnable,
+	// 	// Config: aws.Config{
+	// 	// 	Region: aws.String("us-west-1"),
+	// 	// },
+	// }))
+	// 	targetFilePath := "./product_image_1.jpg"
+	// file, err := os.Open(targetFilePath)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer file.Close()
 
-		if err := db.Create(&product).Error; err != nil {
-			log.Printf("Failed to save product: %v", err)
-		} else {
-			fmt.Printf("Saved Product: %s, Price: %s, Image Src: %s\n", productName, price, imgSrc)
-		}
+	// bucketName := "tuf-products-data"
+	// objectKey := "products-images/"
+	// awsRegion := "us-east-1"
 
-		fmt.Printf("Product: %s, Price: %s, Image Src: %s\n", productName, price, imgSrc)
-	})
+	// // Uploaderを作成し、ローカルファイルをアップロード
+	// // uploader := s3manager.NewUploader(sess)
+	// // _, err = uploader.Upload(&s3manager.UploadInput{
+	// // 	Bucket: aws.String(bucketName),
+	// // 	Key:    aws.String(objectKey),
+	// // 	Body:   file,
+	// // })
+	// // if err != nil {
+	// // 	log.Fatal(err)
+	// // }
+	
+	// // if err := s3.Put(bucketName, objectKey, file); err != nil {
+	// // 	panic(err)
+	// // }
 
-	log.Println("Scraping Completed")
+	// // S3クライアントを作成します
+	// svc := s3.New(sess, &aws.Config{
+	// 	Region: aws.String(awsRegion),
+	// })
+
+	// // S3にアップロードする内容をparamsに入れます
+	// params := &s3.PutObjectInput{
+	// 	// Bucket アップロード先のS3のバケット
+	// 	Bucket: aws.String(bucketName),
+	// 	// Key アップロードする際のオブジェクト名
+	// 	Key: aws.String(objectKey),
+	// 	// Body アップロードする画像ファイル
+	// 	Body: file,
+	// }
+
+	// // S3にアップロードします
+	// _, err = svc.PutObject(params)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// log.Println("S3 done! You are AMAZING!!")
 	
 }
+
+func saveimg(productId int, imageUrl string) {
+	outputFile := "scraper/downloads/product_image_" + strconv.Itoa(productId) +".jpg"
+	_, err := exec.Command("wget", imageUrl, "-O", outputFile).Output()
+	if err != nil {
+		log.Fatal("Save failed...", err)
+	}
+}
+
+func confirmurl(url string) bool {
+    _, err := http.Get(url)
+    if err != nil {
+        fmt.Println("URL that does not exist")
+        os.Exit(0)
+    }
+    use := true
+    return use
+}
+

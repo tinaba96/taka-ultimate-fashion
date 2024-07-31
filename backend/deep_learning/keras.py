@@ -13,13 +13,11 @@ import numpy as np
 import sys
 
 def main():
-    # 引数から数値を取得
     if len(sys.argv) > 1:
         value = float(sys.argv[1])
     else:
         value = 10.0
 
-    # NumPy の配列を作成し計算
     arr = np.array([value] * 5)
     result = np.mean(arr)
     

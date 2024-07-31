@@ -1,20 +1,377 @@
 {
   "/Users/takahiroinaba/src/github/tinaba96/taka-ultimate-fashion/backend/deep_learning/ai": {
     "versionSfCore": null,
-    "versionFramework": "4.1.17",
+    "versionFramework": "4.1.18",
     "isWithinCompose": false,
     "isCompose": false,
     "composeOrgName": null,
-    "composeResolverProviders": {},
+    "composeResolverProviders": {
+      "aws": {
+        "instance": {
+          "credentials": "<REDACTED>",
+          "serviceConfigFile": {
+            "service": "tf-ai",
+            "provider": {
+              "name": "aws",
+              "stage": "dev",
+              "region": "us-east-1",
+              "iamRoleStatements": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket",
+                    "s3:GetObject"
+                  ],
+                  "Resource": "arn:aws:s3::*"
+                }
+              ],
+              "versionFunctions": true,
+              "compiledCloudFormationTemplate": {
+                "AWSTemplateFormatVersion": "2010-09-09",
+                "Description": "The AWS CloudFormation template for this Serverless application",
+                "Resources": {
+                  "ServerlessDeploymentBucket": {
+                    "Type": "AWS::S3::Bucket",
+                    "Properties": {
+                      "BucketEncryption": {
+                        "ServerSideEncryptionConfiguration": [
+                          {
+                            "ServerSideEncryptionByDefault": {
+                              "SSEAlgorithm": "AES256"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "ServerlessDeploymentBucketPolicy": {
+                    "Type": "AWS::S3::BucketPolicy",
+                    "Properties": {
+                      "Bucket": {
+                        "Ref": "ServerlessDeploymentBucket"
+                      },
+                      "PolicyDocument": {
+                        "Statement": [
+                          {
+                            "Action": "s3:*",
+                            "Effect": "Deny",
+                            "Principal": "*",
+                            "Resource": [
+                              {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    "arn:",
+                                    {
+                                      "Ref": "AWS::Partition"
+                                    },
+                                    ":s3:::",
+                                    {
+                                      "Ref": "ServerlessDeploymentBucket"
+                                    },
+                                    "/*"
+                                  ]
+                                ]
+                              },
+                              {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    "arn:",
+                                    {
+                                      "Ref": "AWS::Partition"
+                                    },
+                                    ":s3:::",
+                                    {
+                                      "Ref": "ServerlessDeploymentBucket"
+                                    }
+                                  ]
+                                ]
+                              }
+                            ],
+                            "Condition": {
+                              "Bool": {
+                                "aws:SecureTransport": false
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "HelloLogGroup": {
+                    "Type": "AWS::Logs::LogGroup",
+                    "Properties": {
+                      "LogGroupName": "/aws/lambda/tf-ai-dev-hello"
+                    }
+                  },
+                  "IamRoleLambdaExecution": {
+                    "Type": "AWS::IAM::Role",
+                    "Properties": {
+                      "AssumeRolePolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                          {
+                            "Effect": "Allow",
+                            "Principal": {
+                              "Service": [
+                                "lambda.amazonaws.com"
+                              ]
+                            },
+                            "Action": [
+                              "sts:AssumeRole"
+                            ]
+                          }
+                        ]
+                      },
+                      "Policies": [
+                        {
+                          "PolicyName": {
+                            "Fn::Join": [
+                              "-",
+                              [
+                                "tf-ai",
+                                "dev",
+                                "lambda"
+                              ]
+                            ]
+                          },
+                          "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "logs:CreateLogStream",
+                                  "logs:CreateLogGroup",
+                                  "logs:TagResource"
+                                ],
+                                "Resource": [
+                                  {
+                                    "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tf-ai-dev*:*"
+                                  }
+                                ]
+                              },
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "logs:PutLogEvents"
+                                ],
+                                "Resource": [
+                                  {
+                                    "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tf-ai-dev*:*:*"
+                                  }
+                                ]
+                              },
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "s3:ListBucket",
+                                  "s3:GetObject"
+                                ],
+                                "Resource": "arn:aws:s3::*"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "Path": "/",
+                      "RoleName": {
+                        "Fn::Join": [
+                          "-",
+                          [
+                            "tf-ai",
+                            "dev",
+                            {
+                              "Ref": "AWS::Region"
+                            },
+                            "lambdaRole"
+                          ]
+                        ]
+                      }
+                    }
+                  },
+                  "HelloLambdaFunction": {
+                    "Type": "AWS::Lambda::Function",
+                    "Properties": {
+                      "Code": {
+                        "ImageUri": "010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:2b281f97529972c142de5653f9baecf4e07f4296e81de51a66225b5bdf087b57"
+                      },
+                      "PackageType": "Image",
+                      "FunctionName": "tf-ai-dev-hello",
+                      "MemorySize": 2048,
+                      "Timeout": 180,
+                      "Role": {
+                        "Fn::GetAtt": [
+                          "IamRoleLambdaExecution",
+                          "Arn"
+                        ]
+                      }
+                    },
+                    "DependsOn": [
+                      "HelloLogGroup"
+                    ]
+                  },
+                  "HelloLambdaVersionHZ4ikL7Z7YaE3Wzwkl2hZs3clr9wp926RzyptAYCMl8": {
+                    "Type": "AWS::Lambda::Version",
+                    "DeletionPolicy": "Retain",
+                    "Properties": {
+                      "FunctionName": {
+                        "Ref": "HelloLambdaFunction"
+                      },
+                      "CodeSha256": "2b281f97529972c142de5653f9baecf4e07f4296e81de51a66225b5bdf087b57"
+                    }
+                  }
+                },
+                "Outputs": {
+                  "ServerlessDeploymentBucketName": {
+                    "Value": {
+                      "Ref": "ServerlessDeploymentBucket"
+                    },
+                    "Export": {
+                      "Name": "sls-tf-ai-dev-ServerlessDeploymentBucketName"
+                    }
+                  },
+                  "HelloLambdaFunctionQualifiedArn": {
+                    "Description": "Current Lambda function version",
+                    "Value": {
+                      "Ref": "HelloLambdaVersionHZ4ikL7Z7YaE3Wzwkl2hZs3clr9wp926RzyptAYCMl8"
+                    },
+                    "Export": {
+                      "Name": "sls-tf-ai-dev-HelloLambdaFunctionQualifiedArn"
+                    }
+                  }
+                }
+              },
+              "coreCloudFormationTemplate": {
+                "AWSTemplateFormatVersion": "2010-09-09",
+                "Description": "The AWS CloudFormation template for this Serverless application",
+                "Resources": {
+                  "ServerlessDeploymentBucket": {
+                    "Type": "AWS::S3::Bucket",
+                    "Properties": {
+                      "BucketEncryption": {
+                        "ServerSideEncryptionConfiguration": [
+                          {
+                            "ServerSideEncryptionByDefault": {
+                              "SSEAlgorithm": "AES256"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "ServerlessDeploymentBucketPolicy": {
+                    "Type": "AWS::S3::BucketPolicy",
+                    "Properties": {
+                      "Bucket": {
+                        "Ref": "ServerlessDeploymentBucket"
+                      },
+                      "PolicyDocument": {
+                        "Statement": [
+                          {
+                            "Action": "s3:*",
+                            "Effect": "Deny",
+                            "Principal": "*",
+                            "Resource": [
+                              {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    "arn:",
+                                    {
+                                      "Ref": "AWS::Partition"
+                                    },
+                                    ":s3:::",
+                                    {
+                                      "Ref": "ServerlessDeploymentBucket"
+                                    },
+                                    "/*"
+                                  ]
+                                ]
+                              },
+                              {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    "arn:",
+                                    {
+                                      "Ref": "AWS::Partition"
+                                    },
+                                    ":s3:::",
+                                    {
+                                      "Ref": "ServerlessDeploymentBucket"
+                                    }
+                                  ]
+                                ]
+                              }
+                            ],
+                            "Condition": {
+                              "Bool": {
+                                "aws:SecureTransport": false
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "Outputs": {
+                  "ServerlessDeploymentBucketName": {
+                    "Value": {
+                      "Ref": "ServerlessDeploymentBucket"
+                    }
+                  }
+                }
+              },
+              "vpc": {}
+            },
+            "functions": {
+              "hello": {
+                "image": "010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:2b281f97529972c142de5653f9baecf4e07f4296e81de51a66225b5bdf087b57",
+                "memorySize": 2048,
+                "timeout": 180,
+                "events": [],
+                "name": "tf-ai-dev-hello",
+                "package": {},
+                "memory": 2048,
+                "vpc": {},
+                "versionLogicalId": "HelloLambdaVersionHZ4ikL7Z7YaE3Wzwkl2hZs3clr9wp926RzyptAYCMl8"
+              }
+            }
+          },
+          "configFileDirPath": "/Users/takahiroinaba/src/github/tinaba96/taka-ultimate-fashion/backend/deep_learning/ai",
+          "config": {
+            "type": "aws"
+          },
+          "options": {},
+          "stage": "dev",
+          "dashboard": null,
+          "isDefaultConfig": true
+        },
+        "resolvers": {}
+      }
+    },
     "composeServiceName": null,
     "servicePath": "/Users/takahiroinaba/src/github/tinaba96/taka-ultimate-fashion/backend/deep_learning/ai",
     "serviceConfigFileName": "serverless.yml",
     "service": {
-      "service": "tf-test",
+      "service": "tf-ai",
       "provider": {
         "name": "aws",
         "stage": "dev",
         "region": "us-east-1",
+        "iamRoleStatements": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "s3:ListBucket",
+              "s3:GetObject"
+            ],
+            "Resource": "arn:aws:s3::*"
+          }
+        ],
         "versionFunctions": true,
         "compiledCloudFormationTemplate": {
           "AWSTemplateFormatVersion": "2010-09-09",
@@ -92,7 +449,7 @@
             "HelloLogGroup": {
               "Type": "AWS::Logs::LogGroup",
               "Properties": {
-                "LogGroupName": "/aws/lambda/tf-test-dev-hello"
+                "LogGroupName": "/aws/lambda/tf-ai-dev-hello"
               }
             },
             "IamRoleLambdaExecution": {
@@ -120,7 +477,7 @@
                       "Fn::Join": [
                         "-",
                         [
-                          "tf-test",
+                          "tf-ai",
                           "dev",
                           "lambda"
                         ]
@@ -138,7 +495,7 @@
                           ],
                           "Resource": [
                             {
-                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tf-test-dev*:*"
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tf-ai-dev*:*"
                             }
                           ]
                         },
@@ -149,9 +506,17 @@
                           ],
                           "Resource": [
                             {
-                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tf-test-dev*:*:*"
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tf-ai-dev*:*:*"
                             }
                           ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "s3:ListBucket",
+                            "s3:GetObject"
+                          ],
+                          "Resource": "arn:aws:s3::*"
                         }
                       ]
                     }
@@ -162,7 +527,7 @@
                   "Fn::Join": [
                     "-",
                     [
-                      "tf-test",
+                      "tf-ai",
                       "dev",
                       {
                         "Ref": "AWS::Region"
@@ -177,10 +542,10 @@
               "Type": "AWS::Lambda::Function",
               "Properties": {
                 "Code": {
-                  "ImageUri": "010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:57b51592b0292e1ddbc720bfeaad546a3ce204c5e194995703c9b6a2fe6dc342"
+                  "ImageUri": "010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:2b281f97529972c142de5653f9baecf4e07f4296e81de51a66225b5bdf087b57"
                 },
                 "PackageType": "Image",
-                "FunctionName": "tf-test-dev-hello",
+                "FunctionName": "tf-ai-dev-hello",
                 "MemorySize": 2048,
                 "Timeout": 180,
                 "Role": {
@@ -194,14 +559,14 @@
                 "HelloLogGroup"
               ]
             },
-            "HelloLambdaVersionqSlrq8vzXTS5u9tr8tJQk8yQd2WgvXl8HzdmEIdxY": {
+            "HelloLambdaVersionHZ4ikL7Z7YaE3Wzwkl2hZs3clr9wp926RzyptAYCMl8": {
               "Type": "AWS::Lambda::Version",
               "DeletionPolicy": "Retain",
               "Properties": {
                 "FunctionName": {
                   "Ref": "HelloLambdaFunction"
                 },
-                "CodeSha256": "57b51592b0292e1ddbc720bfeaad546a3ce204c5e194995703c9b6a2fe6dc342"
+                "CodeSha256": "2b281f97529972c142de5653f9baecf4e07f4296e81de51a66225b5bdf087b57"
               }
             }
           },
@@ -211,16 +576,16 @@
                 "Ref": "ServerlessDeploymentBucket"
               },
               "Export": {
-                "Name": "sls-tf-test-dev-ServerlessDeploymentBucketName"
+                "Name": "sls-tf-ai-dev-ServerlessDeploymentBucketName"
               }
             },
             "HelloLambdaFunctionQualifiedArn": {
               "Description": "Current Lambda function version",
               "Value": {
-                "Ref": "HelloLambdaVersionqSlrq8vzXTS5u9tr8tJQk8yQd2WgvXl8HzdmEIdxY"
+                "Ref": "HelloLambdaVersionHZ4ikL7Z7YaE3Wzwkl2hZs3clr9wp926RzyptAYCMl8"
               },
               "Export": {
-                "Name": "sls-tf-test-dev-HelloLambdaFunctionQualifiedArn"
+                "Name": "sls-tf-ai-dev-HelloLambdaFunctionQualifiedArn"
               }
             }
           }
@@ -311,19 +676,19 @@
       },
       "functions": {
         "hello": {
-          "image": "010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:57b51592b0292e1ddbc720bfeaad546a3ce204c5e194995703c9b6a2fe6dc342",
+          "image": "010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:2b281f97529972c142de5653f9baecf4e07f4296e81de51a66225b5bdf087b57",
           "memorySize": 2048,
           "timeout": 180,
           "events": [],
-          "name": "tf-test-dev-hello",
+          "name": "tf-ai-dev-hello",
           "package": {},
           "memory": 2048,
           "vpc": {},
-          "versionLogicalId": "HelloLambdaVersionqSlrq8vzXTS5u9tr8tJQk8yQd2WgvXl8HzdmEIdxY"
+          "versionLogicalId": "HelloLambdaVersionHZ4ikL7Z7YaE3Wzwkl2hZs3clr9wp926RzyptAYCMl8"
         }
       }
     },
-    "serviceRawFile": "service: tf-test\n\nprovider:\n  name: aws\n  stage: dev\n  region: us-east-1\n\nfunctions:\n  hello:\n    image: 010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:57b51592b0292e1ddbc720bfeaad546a3ce204c5e194995703c9b6a2fe6dc342\n    memorySize: 2048\n    timeout: 180\n",
+    "serviceRawFile": "service: tf-ai\n\n# provider:\n#   name: aws\n#   stage: dev\n#   region: us-east-1\n\n# functions:\n#   hello:\n#     image: 010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:57b51592b0292e1ddbc720bfeaad546a3ce204c5e194995703c9b6a2fe6dc342\n#     memorySize: 2048\n#     timeout: 180\n\n# service: image-classification\n\n# plugins:\n#   - serverless-python-requirements\n\n# custom:\n#   pythonRequirements:\n#     dockerizePip: true\n#     zip: true\n#     slim: true\n#     slimPatterns:\n#       - \"**/debug\"\n#       - \"**/grpc\"\n#       - \"**/h5py\"\n#       - \"**/markdown\"\n#       - \"**/numpy\"\n#       - \"**/pkg_resources\"\n#       - \"**/setuptools\"\n#       - \"**/tensorboard/plugins\"\n#       - \"**/tensorboard/webfiles.zip\"\n#       - \"**/tensorflow_core/contrib\"\n#       - \"**/tensorflow_core/examples\"\n#       - \"**/tensorflow_core/include\"\n#       - \"**/tensorflow_estimator\"\n#       - \"**/werkzeug\"\n#       - \"**/wheel\"\n#   requirementsService: image-classification-layer\n#   requirementsExport: ImageClassificationLayer\n#   requirementsLayer: ${cf:${self:custom.requirementsService}-${self:provider.stage}.${self:custom.requirementsExport}}\n\n\nprovider:\n  name: aws\n  stage: dev\n  region: us-east-1\n  iamRoleStatements:\n      - Effect: \"Allow\"\n        Action:\n          - s3:ListBucket\n          - s3:GetObject\n        Resource:\n          - \"arn:aws:s3::*\"\n  # ecr:\n  #   images:\n  #     appimage:\n  #       path: ./\n  #       platform: linux/amd64\n\nfunctions:\n  hello:\n    image: 010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:2b281f97529972c142de5653f9baecf4e07f4296e81de51a66225b5bdf087b57\n    memorySize: 2048\n    timeout: 180\n",
     "command": [
       "deploy"
     ],
@@ -350,23 +715,23 @@
     "userEmail": "tinaba96.ca@gmail.com",
     "serviceProviderAwsCredentials": "<REDACTED>",
     "serviceProviderAwsAccountId": "010438495965",
-    "versionSf": "4.1.17",
-    "serviceProviderAwsCfStackName": "tf-test-dev",
-    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:us-east-1:010438495965:stack/tf-test-dev/76801cd0-4e37-11ef-8fd8-0ef626080d1f",
-    "serviceProviderAwsCfStackCreated": "2024-07-30T05:49:19.054Z",
-    "serviceProviderAwsCfStackUpdated": "2024-07-30T05:51:35.804Z",
+    "versionSf": "4.1.18",
+    "serviceProviderAwsCfStackName": "tf-ai-dev",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:us-east-1:010438495965:stack/tf-ai-dev/1ad223a0-4ed3-11ef-aa53-0affe40e74c9",
+    "serviceProviderAwsCfStackCreated": "2024-07-31T00:23:26.745Z",
+    "serviceProviderAwsCfStackUpdated": "2024-07-31T01:59:04.216Z",
     "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
     "serviceProviderAwsCfStackOutputs": [
       {
         "OutputKey": "HelloLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:us-east-1:010438495965:function:tf-test-dev-hello:1",
+        "OutputValue": "arn:aws:lambda:us-east-1:010438495965:function:tf-ai-dev-hello:6",
         "Description": "Current Lambda function version",
-        "ExportName": "sls-tf-test-dev-HelloLambdaFunctionQualifiedArn"
+        "ExportName": "sls-tf-ai-dev-HelloLambdaFunctionQualifiedArn"
       },
       {
         "OutputKey": "ServerlessDeploymentBucketName",
-        "OutputValue": "tf-test-dev-serverlessdeploymentbucket-s8wde1myfiq4",
-        "ExportName": "sls-tf-test-dev-ServerlessDeploymentBucketName"
+        "OutputValue": "tf-ai-dev-serverlessdeploymentbucket-azdht8omjqab",
+        "ExportName": "sls-tf-ai-dev-ServerlessDeploymentBucketName"
       }
     ]
   }

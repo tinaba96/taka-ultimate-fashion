@@ -1,0 +1,1036 @@
+{
+  "/Users/takahiroinaba/src/github/tinaba96/taka-ultimate-fashion/backend/deep_learning/lambda_function": {
+    "versionSfCore": null,
+    "versionFramework": "4.1.17",
+    "isWithinCompose": false,
+    "isCompose": false,
+    "composeOrgName": null,
+    "composeResolverProviders": {
+      "cf-${self:custom.requirementsService}-${self:provider.stage}.${self:custom.requirementsExport}": {
+        "instance": {
+          "credentials": "<REDACTED>",
+          "serviceConfigFile": {
+            "service": "image-classification",
+            "plugins": [
+              "serverless-python-requirements"
+            ],
+            "custom": {
+              "pythonRequirements": {
+                "dockerizePip": true,
+                "zip": true,
+                "slim": true,
+                "slimPatterns": [
+                  "**/debug",
+                  "**/grpc",
+                  "**/h5py",
+                  "**/markdown",
+                  "**/numpy",
+                  "**/pkg_resources",
+                  "**/setuptools",
+                  "**/tensorboard/plugins",
+                  "**/tensorboard/webfiles.zip",
+                  "**/tensorflow_core/contrib",
+                  "**/tensorflow_core/examples",
+                  "**/tensorflow_core/include",
+                  "**/tensorflow_estimator",
+                  "**/werkzeug",
+                  "**/wheel"
+                ]
+              },
+              "requirementsService": "image-classification-layer",
+              "requirementsExport": "ImageClassificationLayer",
+              "requirementsLayer": "arn:aws:lambda:us-east-1:010438495965:layer:image-classification-layer-dev-python-requirements:1"
+            },
+            "provider": {
+              "name": "aws",
+              "runtime": "python3.6",
+              "stage": "dev",
+              "region": "us-east-1",
+              "iamRoleStatements": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket",
+                    "s3:GetObject"
+                  ],
+                  "Resource": "arn:aws:s3::*"
+                }
+              ],
+              "versionFunctions": true,
+              "compiledCloudFormationTemplate": {
+                "AWSTemplateFormatVersion": "2010-09-09",
+                "Description": "The AWS CloudFormation template for this Serverless application",
+                "Resources": {
+                  "ServerlessDeploymentBucket": {
+                    "Type": "AWS::S3::Bucket",
+                    "Properties": {
+                      "BucketEncryption": {
+                        "ServerSideEncryptionConfiguration": [
+                          {
+                            "ServerSideEncryptionByDefault": {
+                              "SSEAlgorithm": "AES256"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "ServerlessDeploymentBucketPolicy": {
+                    "Type": "AWS::S3::BucketPolicy",
+                    "Properties": {
+                      "Bucket": {
+                        "Ref": "ServerlessDeploymentBucket"
+                      },
+                      "PolicyDocument": {
+                        "Statement": [
+                          {
+                            "Action": "s3:*",
+                            "Effect": "Deny",
+                            "Principal": "*",
+                            "Resource": [
+                              {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    "arn:",
+                                    {
+                                      "Ref": "AWS::Partition"
+                                    },
+                                    ":s3:::",
+                                    {
+                                      "Ref": "ServerlessDeploymentBucket"
+                                    },
+                                    "/*"
+                                  ]
+                                ]
+                              },
+                              {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    "arn:",
+                                    {
+                                      "Ref": "AWS::Partition"
+                                    },
+                                    ":s3:::",
+                                    {
+                                      "Ref": "ServerlessDeploymentBucket"
+                                    }
+                                  ]
+                                ]
+                              }
+                            ],
+                            "Condition": {
+                              "Bool": {
+                                "aws:SecureTransport": false
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "ClassifyLogGroup": {
+                    "Type": "AWS::Logs::LogGroup",
+                    "Properties": {
+                      "LogGroupName": "/aws/lambda/image-classification-dev-classify"
+                    }
+                  },
+                  "IamRoleLambdaExecution": {
+                    "Type": "AWS::IAM::Role",
+                    "Properties": {
+                      "AssumeRolePolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                          {
+                            "Effect": "Allow",
+                            "Principal": {
+                              "Service": [
+                                "lambda.amazonaws.com"
+                              ]
+                            },
+                            "Action": [
+                              "sts:AssumeRole"
+                            ]
+                          }
+                        ]
+                      },
+                      "Policies": [
+                        {
+                          "PolicyName": {
+                            "Fn::Join": [
+                              "-",
+                              [
+                                "image-classification",
+                                "dev",
+                                "lambda"
+                              ]
+                            ]
+                          },
+                          "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "logs:CreateLogStream",
+                                  "logs:CreateLogGroup",
+                                  "logs:TagResource"
+                                ],
+                                "Resource": [
+                                  {
+                                    "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/image-classification-dev*:*"
+                                  }
+                                ]
+                              },
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "logs:PutLogEvents"
+                                ],
+                                "Resource": [
+                                  {
+                                    "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/image-classification-dev*:*:*"
+                                  }
+                                ]
+                              },
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "s3:ListBucket",
+                                  "s3:GetObject"
+                                ],
+                                "Resource": "arn:aws:s3::*"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "Path": "/",
+                      "RoleName": {
+                        "Fn::Join": [
+                          "-",
+                          [
+                            "image-classification",
+                            "dev",
+                            {
+                              "Ref": "AWS::Region"
+                            },
+                            "lambdaRole"
+                          ]
+                        ]
+                      }
+                    }
+                  }
+                },
+                "Outputs": {
+                  "ServerlessDeploymentBucketName": {
+                    "Value": {
+                      "Ref": "ServerlessDeploymentBucket"
+                    }
+                  }
+                }
+              },
+              "coreCloudFormationTemplate": {
+                "AWSTemplateFormatVersion": "2010-09-09",
+                "Description": "The AWS CloudFormation template for this Serverless application",
+                "Resources": {
+                  "ServerlessDeploymentBucket": {
+                    "Type": "AWS::S3::Bucket",
+                    "Properties": {
+                      "BucketEncryption": {
+                        "ServerSideEncryptionConfiguration": [
+                          {
+                            "ServerSideEncryptionByDefault": {
+                              "SSEAlgorithm": "AES256"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "ServerlessDeploymentBucketPolicy": {
+                    "Type": "AWS::S3::BucketPolicy",
+                    "Properties": {
+                      "Bucket": {
+                        "Ref": "ServerlessDeploymentBucket"
+                      },
+                      "PolicyDocument": {
+                        "Statement": [
+                          {
+                            "Action": "s3:*",
+                            "Effect": "Deny",
+                            "Principal": "*",
+                            "Resource": [
+                              {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    "arn:",
+                                    {
+                                      "Ref": "AWS::Partition"
+                                    },
+                                    ":s3:::",
+                                    {
+                                      "Ref": "ServerlessDeploymentBucket"
+                                    },
+                                    "/*"
+                                  ]
+                                ]
+                              },
+                              {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    "arn:",
+                                    {
+                                      "Ref": "AWS::Partition"
+                                    },
+                                    ":s3:::",
+                                    {
+                                      "Ref": "ServerlessDeploymentBucket"
+                                    }
+                                  ]
+                                ]
+                              }
+                            ],
+                            "Condition": {
+                              "Bool": {
+                                "aws:SecureTransport": false
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "Outputs": {
+                  "ServerlessDeploymentBucketName": {
+                    "Value": {
+                      "Ref": "ServerlessDeploymentBucket"
+                    }
+                  }
+                }
+              }
+            },
+            "functions": {
+              "classify": {
+                "handler": "handler.classify",
+                "memorySize": 2048,
+                "timeout": 60,
+                "layers": [
+                  "arn:aws:lambda:us-east-1:010438495965:layer:image-classification-layer-dev-python-requirements:1"
+                ],
+                "events": [],
+                "name": "image-classification-dev-classify"
+              }
+            }
+          },
+          "configFileDirPath": "/Users/takahiroinaba/src/github/tinaba96/taka-ultimate-fashion/backend/deep_learning/lambda_function",
+          "config": {
+            "region": "us-east-1",
+            "type": "aws",
+            "cf": {
+              "type": "cf"
+            }
+          },
+          "options": {},
+          "stage": "dev",
+          "dashboard": null
+        },
+        "resolvers": {}
+      },
+      "self": {
+        "instance": {
+          "credentials": "<REDACTED>",
+          "serviceConfigFile": {
+            "service": "image-classification",
+            "plugins": [
+              "serverless-python-requirements"
+            ],
+            "custom": {
+              "pythonRequirements": {
+                "dockerizePip": true,
+                "zip": true,
+                "slim": true,
+                "slimPatterns": [
+                  "**/debug",
+                  "**/grpc",
+                  "**/h5py",
+                  "**/markdown",
+                  "**/numpy",
+                  "**/pkg_resources",
+                  "**/setuptools",
+                  "**/tensorboard/plugins",
+                  "**/tensorboard/webfiles.zip",
+                  "**/tensorflow_core/contrib",
+                  "**/tensorflow_core/examples",
+                  "**/tensorflow_core/include",
+                  "**/tensorflow_estimator",
+                  "**/werkzeug",
+                  "**/wheel"
+                ]
+              },
+              "requirementsService": "image-classification-layer",
+              "requirementsExport": "ImageClassificationLayer",
+              "requirementsLayer": "arn:aws:lambda:us-east-1:010438495965:layer:image-classification-layer-dev-python-requirements:1"
+            },
+            "provider": {
+              "name": "aws",
+              "runtime": "python3.6",
+              "stage": "dev",
+              "region": "us-east-1",
+              "iamRoleStatements": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket",
+                    "s3:GetObject"
+                  ],
+                  "Resource": "arn:aws:s3::*"
+                }
+              ],
+              "versionFunctions": true,
+              "compiledCloudFormationTemplate": {
+                "AWSTemplateFormatVersion": "2010-09-09",
+                "Description": "The AWS CloudFormation template for this Serverless application",
+                "Resources": {
+                  "ServerlessDeploymentBucket": {
+                    "Type": "AWS::S3::Bucket",
+                    "Properties": {
+                      "BucketEncryption": {
+                        "ServerSideEncryptionConfiguration": [
+                          {
+                            "ServerSideEncryptionByDefault": {
+                              "SSEAlgorithm": "AES256"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "ServerlessDeploymentBucketPolicy": {
+                    "Type": "AWS::S3::BucketPolicy",
+                    "Properties": {
+                      "Bucket": {
+                        "Ref": "ServerlessDeploymentBucket"
+                      },
+                      "PolicyDocument": {
+                        "Statement": [
+                          {
+                            "Action": "s3:*",
+                            "Effect": "Deny",
+                            "Principal": "*",
+                            "Resource": [
+                              {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    "arn:",
+                                    {
+                                      "Ref": "AWS::Partition"
+                                    },
+                                    ":s3:::",
+                                    {
+                                      "Ref": "ServerlessDeploymentBucket"
+                                    },
+                                    "/*"
+                                  ]
+                                ]
+                              },
+                              {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    "arn:",
+                                    {
+                                      "Ref": "AWS::Partition"
+                                    },
+                                    ":s3:::",
+                                    {
+                                      "Ref": "ServerlessDeploymentBucket"
+                                    }
+                                  ]
+                                ]
+                              }
+                            ],
+                            "Condition": {
+                              "Bool": {
+                                "aws:SecureTransport": false
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "ClassifyLogGroup": {
+                    "Type": "AWS::Logs::LogGroup",
+                    "Properties": {
+                      "LogGroupName": "/aws/lambda/image-classification-dev-classify"
+                    }
+                  },
+                  "IamRoleLambdaExecution": {
+                    "Type": "AWS::IAM::Role",
+                    "Properties": {
+                      "AssumeRolePolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                          {
+                            "Effect": "Allow",
+                            "Principal": {
+                              "Service": [
+                                "lambda.amazonaws.com"
+                              ]
+                            },
+                            "Action": [
+                              "sts:AssumeRole"
+                            ]
+                          }
+                        ]
+                      },
+                      "Policies": [
+                        {
+                          "PolicyName": {
+                            "Fn::Join": [
+                              "-",
+                              [
+                                "image-classification",
+                                "dev",
+                                "lambda"
+                              ]
+                            ]
+                          },
+                          "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "logs:CreateLogStream",
+                                  "logs:CreateLogGroup",
+                                  "logs:TagResource"
+                                ],
+                                "Resource": [
+                                  {
+                                    "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/image-classification-dev*:*"
+                                  }
+                                ]
+                              },
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "logs:PutLogEvents"
+                                ],
+                                "Resource": [
+                                  {
+                                    "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/image-classification-dev*:*:*"
+                                  }
+                                ]
+                              },
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "s3:ListBucket",
+                                  "s3:GetObject"
+                                ],
+                                "Resource": "arn:aws:s3::*"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "Path": "/",
+                      "RoleName": {
+                        "Fn::Join": [
+                          "-",
+                          [
+                            "image-classification",
+                            "dev",
+                            {
+                              "Ref": "AWS::Region"
+                            },
+                            "lambdaRole"
+                          ]
+                        ]
+                      }
+                    }
+                  }
+                },
+                "Outputs": {
+                  "ServerlessDeploymentBucketName": {
+                    "Value": {
+                      "Ref": "ServerlessDeploymentBucket"
+                    }
+                  }
+                }
+              },
+              "coreCloudFormationTemplate": {
+                "AWSTemplateFormatVersion": "2010-09-09",
+                "Description": "The AWS CloudFormation template for this Serverless application",
+                "Resources": {
+                  "ServerlessDeploymentBucket": {
+                    "Type": "AWS::S3::Bucket",
+                    "Properties": {
+                      "BucketEncryption": {
+                        "ServerSideEncryptionConfiguration": [
+                          {
+                            "ServerSideEncryptionByDefault": {
+                              "SSEAlgorithm": "AES256"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "ServerlessDeploymentBucketPolicy": {
+                    "Type": "AWS::S3::BucketPolicy",
+                    "Properties": {
+                      "Bucket": {
+                        "Ref": "ServerlessDeploymentBucket"
+                      },
+                      "PolicyDocument": {
+                        "Statement": [
+                          {
+                            "Action": "s3:*",
+                            "Effect": "Deny",
+                            "Principal": "*",
+                            "Resource": [
+                              {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    "arn:",
+                                    {
+                                      "Ref": "AWS::Partition"
+                                    },
+                                    ":s3:::",
+                                    {
+                                      "Ref": "ServerlessDeploymentBucket"
+                                    },
+                                    "/*"
+                                  ]
+                                ]
+                              },
+                              {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    "arn:",
+                                    {
+                                      "Ref": "AWS::Partition"
+                                    },
+                                    ":s3:::",
+                                    {
+                                      "Ref": "ServerlessDeploymentBucket"
+                                    }
+                                  ]
+                                ]
+                              }
+                            ],
+                            "Condition": {
+                              "Bool": {
+                                "aws:SecureTransport": false
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "Outputs": {
+                  "ServerlessDeploymentBucketName": {
+                    "Value": {
+                      "Ref": "ServerlessDeploymentBucket"
+                    }
+                  }
+                }
+              }
+            },
+            "functions": {
+              "classify": {
+                "handler": "handler.classify",
+                "memorySize": 2048,
+                "timeout": 60,
+                "layers": [
+                  "arn:aws:lambda:us-east-1:010438495965:layer:image-classification-layer-dev-python-requirements:1"
+                ],
+                "events": [],
+                "name": "image-classification-dev-classify"
+              }
+            }
+          },
+          "configFileDirPath": "/Users/takahiroinaba/src/github/tinaba96/taka-ultimate-fashion/backend/deep_learning/lambda_function",
+          "config": {
+            "type": "self"
+          },
+          "options": {},
+          "stage": "dev",
+          "dashboard": null
+        },
+        "resolvers": {}
+      }
+    },
+    "composeServiceName": null,
+    "servicePath": "/Users/takahiroinaba/src/github/tinaba96/taka-ultimate-fashion/backend/deep_learning/lambda_function",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "image-classification",
+      "plugins": [
+        "serverless-python-requirements"
+      ],
+      "custom": {
+        "pythonRequirements": {
+          "dockerizePip": true,
+          "zip": true,
+          "slim": true,
+          "slimPatterns": [
+            "**/debug",
+            "**/grpc",
+            "**/h5py",
+            "**/markdown",
+            "**/numpy",
+            "**/pkg_resources",
+            "**/setuptools",
+            "**/tensorboard/plugins",
+            "**/tensorboard/webfiles.zip",
+            "**/tensorflow_core/contrib",
+            "**/tensorflow_core/examples",
+            "**/tensorflow_core/include",
+            "**/tensorflow_estimator",
+            "**/werkzeug",
+            "**/wheel"
+          ]
+        },
+        "requirementsService": "image-classification-layer",
+        "requirementsExport": "ImageClassificationLayer",
+        "requirementsLayer": "arn:aws:lambda:us-east-1:010438495965:layer:image-classification-layer-dev-python-requirements:1"
+      },
+      "provider": {
+        "name": "aws",
+        "runtime": "python3.6",
+        "stage": "dev",
+        "region": "us-east-1",
+        "iamRoleStatements": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "s3:ListBucket",
+              "s3:GetObject"
+            ],
+            "Resource": "arn:aws:s3::*"
+          }
+        ],
+        "versionFunctions": true,
+        "compiledCloudFormationTemplate": {
+          "AWSTemplateFormatVersion": "2010-09-09",
+          "Description": "The AWS CloudFormation template for this Serverless application",
+          "Resources": {
+            "ServerlessDeploymentBucket": {
+              "Type": "AWS::S3::Bucket",
+              "Properties": {
+                "BucketEncryption": {
+                  "ServerSideEncryptionConfiguration": [
+                    {
+                      "ServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "ServerlessDeploymentBucketPolicy": {
+              "Type": "AWS::S3::BucketPolicy",
+              "Properties": {
+                "Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "PolicyDocument": {
+                  "Statement": [
+                    {
+                      "Action": "s3:*",
+                      "Effect": "Deny",
+                      "Principal": "*",
+                      "Resource": [
+                        {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "arn:",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              ":s3:::",
+                              {
+                                "Ref": "ServerlessDeploymentBucket"
+                              },
+                              "/*"
+                            ]
+                          ]
+                        },
+                        {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "arn:",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              ":s3:::",
+                              {
+                                "Ref": "ServerlessDeploymentBucket"
+                              }
+                            ]
+                          ]
+                        }
+                      ],
+                      "Condition": {
+                        "Bool": {
+                          "aws:SecureTransport": false
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "ClassifyLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/image-classification-dev-classify"
+              }
+            },
+            "IamRoleLambdaExecution": {
+              "Type": "AWS::IAM::Role",
+              "Properties": {
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": [
+                          "lambda.amazonaws.com"
+                        ]
+                      },
+                      "Action": [
+                        "sts:AssumeRole"
+                      ]
+                    }
+                  ]
+                },
+                "Policies": [
+                  {
+                    "PolicyName": {
+                      "Fn::Join": [
+                        "-",
+                        [
+                          "image-classification",
+                          "dev",
+                          "lambda"
+                        ]
+                      ]
+                    },
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:CreateLogStream",
+                            "logs:CreateLogGroup",
+                            "logs:TagResource"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/image-classification-dev*:*"
+                            }
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:PutLogEvents"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/image-classification-dev*:*:*"
+                            }
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "s3:ListBucket",
+                            "s3:GetObject"
+                          ],
+                          "Resource": "arn:aws:s3::*"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "Path": "/",
+                "RoleName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "image-classification",
+                      "dev",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "lambdaRole"
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          "Outputs": {
+            "ServerlessDeploymentBucketName": {
+              "Value": {
+                "Ref": "ServerlessDeploymentBucket"
+              }
+            }
+          }
+        },
+        "coreCloudFormationTemplate": {
+          "AWSTemplateFormatVersion": "2010-09-09",
+          "Description": "The AWS CloudFormation template for this Serverless application",
+          "Resources": {
+            "ServerlessDeploymentBucket": {
+              "Type": "AWS::S3::Bucket",
+              "Properties": {
+                "BucketEncryption": {
+                  "ServerSideEncryptionConfiguration": [
+                    {
+                      "ServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "ServerlessDeploymentBucketPolicy": {
+              "Type": "AWS::S3::BucketPolicy",
+              "Properties": {
+                "Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "PolicyDocument": {
+                  "Statement": [
+                    {
+                      "Action": "s3:*",
+                      "Effect": "Deny",
+                      "Principal": "*",
+                      "Resource": [
+                        {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "arn:",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              ":s3:::",
+                              {
+                                "Ref": "ServerlessDeploymentBucket"
+                              },
+                              "/*"
+                            ]
+                          ]
+                        },
+                        {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "arn:",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              ":s3:::",
+                              {
+                                "Ref": "ServerlessDeploymentBucket"
+                              }
+                            ]
+                          ]
+                        }
+                      ],
+                      "Condition": {
+                        "Bool": {
+                          "aws:SecureTransport": false
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "Outputs": {
+            "ServerlessDeploymentBucketName": {
+              "Value": {
+                "Ref": "ServerlessDeploymentBucket"
+              }
+            }
+          }
+        }
+      },
+      "functions": {
+        "classify": {
+          "handler": "handler.classify",
+          "memorySize": 2048,
+          "timeout": 60,
+          "layers": [
+            "arn:aws:lambda:us-east-1:010438495965:layer:image-classification-layer-dev-python-requirements:1"
+          ],
+          "events": [],
+          "name": "image-classification-dev-classify"
+        }
+      }
+    },
+    "serviceRawFile": "service: image-classification\n\nplugins:\n  - serverless-python-requirements\n\ncustom:\n  pythonRequirements:\n    dockerizePip: true\n    zip: true\n    slim: true\n    slimPatterns:\n      - \"**/debug\"\n      - \"**/grpc\"\n      - \"**/h5py\"\n      - \"**/markdown\"\n      - \"**/numpy\"\n      - \"**/pkg_resources\"\n      - \"**/setuptools\"\n      - \"**/tensorboard/plugins\"\n      - \"**/tensorboard/webfiles.zip\"\n      - \"**/tensorflow_core/contrib\"\n      - \"**/tensorflow_core/examples\"\n      - \"**/tensorflow_core/include\"\n      - \"**/tensorflow_estimator\"\n      - \"**/werkzeug\"\n      - \"**/wheel\"\n  requirementsService: image-classification-layer\n  requirementsExport: ImageClassificationLayer\n  requirementsLayer: ${cf:${self:custom.requirementsService}-${self:provider.stage}.${self:custom.requirementsExport}}\n\nprovider:\n  name: aws\n  runtime: python3.6\n  stage: dev\n  region: us-east-1\n  iamRoleStatements:\n      - Effect: \"Allow\"\n        Action:\n          - s3:ListBucket\n          - s3:GetObject\n        Resource:\n          - \"arn:aws:s3::*\"\n\nfunctions:\n  classify:\n    handler: handler.classify\n    memorySize: 2048\n    timeout: 60\n    layers:\n      - ${self:custom.requirementsLayer}\n",
+    "command": [
+      "deploy"
+    ],
+    "options": {},
+    "error": {
+      "message": "Running \"docker run --rm -v /Users/takahiroinaba/Library/Caches/serverless-python-requirements/27eea2824b99266e811df119c603fb6c4ea71195b873d00e6b7eaede8954102e_x86_64_slspyc:/var/task:z -v /Users/takahiroinaba/Library/Caches/serverless-python-requirements/downloadCacheslspyc:/var/useDownloadCache:z -u 0 public.ecr.aws/sam/build-python3.6:latest-x86_64 /bin/sh -c python3.6 -m pip install -t /var/task/ -r /var/task/requirements.txt --cache-dir /var/useDownloadCache && find /var/task -name \\*.so -exec strip \\{\\} \\;\" failed with: \"WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested\n  Could not find a version that satisfies the requirement tensorflow==2.0.0-rc0 (from -r /var/task/requirements.txt (line 1)) (from versions: 0.12.1, 1.0.0, 1.0.1, 1.1.0, 1.2.0, 1.2.1, 1.3.0, 1.4.0, 1.4.1, 1.5.0, 1.5.1, 1.6.0, 1.7.0, 1.7.1, 1.8.0, 1.9.0, 1.10.0, 1.10.1, 1.11.0, 1.12.0, 1.12.2, 1.12.3, 1.13.1, 1.13.2, 1.14.0)\nNo matching distribution found for tensorflow==2.0.0-rc0 (from -r /var/task/requirements.txt (line 1))\nYou are using pip version 18.1, however version 21.3.1 is available.\nYou should consider upgrading via the 'pip install --upgrade pip' command.\"",
+      "stack": "ServerlessError2: Running \"docker run --rm -v /Users/takahiroinaba/Library/Caches/serverless-python-requirements/27eea2824b99266e811df119c603fb6c4ea71195b873d00e6b7eaede8954102e_x86_64_slspyc:/var/task:z -v /Users/takahiroinaba/Library/Caches/serverless-python-requirements/downloadCacheslspyc:/var/useDownloadCache:z -u 0 public.ecr.aws/sam/build-python3.6:latest-x86_64 /bin/sh -c python3.6 -m pip install -t /var/task/ -r /var/task/requirements.txt --cache-dir /var/useDownloadCache && find /var/task -name \\*.so -exec strip \\{\\} \\;\" failed with: \"WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested\n  Could not find a version that satisfies the requirement tensorflow==2.0.0-rc0 (from -r /var/task/requirements.txt (line 1)) (from versions: 0.12.1, 1.0.0, 1.0.1, 1.1.0, 1.2.0, 1.2.1, 1.3.0, 1.4.0, 1.4.1, 1.5.0, 1.5.1, 1.6.0, 1.7.0, 1.7.1, 1.8.0, 1.9.0, 1.10.0, 1.10.1, 1.11.0, 1.12.0, 1.12.2, 1.12.3, 1.13.1, 1.13.2, 1.14.0)\nNo matching distribution found for tensorflow==2.0.0-rc0 (from -r /var/task/requirements.txt (line 1))\nYou are using pip version 18.1, however version 21.3.1 is available.\nYou should consider upgrading via the 'pip install --upgrade pip' command.\"\n    at installRequirements (/Users/takahiroinaba/src/github/tinaba96/taka-ultimate-fashion/backend/deep_learning/lambda_function/node_modules/serverless-python-requirements/lib/pip.js:427:17)\n    at async installRequirementsIfNeeded (/Users/takahiroinaba/src/github/tinaba96/taka-ultimate-fashion/backend/deep_learning/lambda_function/node_modules/serverless-python-requirements/lib/pip.js:704:3)\n    at async ServerlessPythonRequirements.installAllRequirements (/Users/takahiroinaba/src/github/tinaba96/taka-ultimate-fashion/backend/deep_learning/lambda_function/node_modules/serverless-python-requirements/lib/pip.js:782:29)",
+      "code": "PYTHON_REQUIREMENTS_DOCKER_COMMAND_FAILED"
+    },
+    "params": {},
+    "machineId": "489205d7687988c80aa98080e2bf86e7",
+    "accessKeyV2": "<REDACTED>",
+    "accessKeyV1": "<REDACTED>",
+    "orgId": "727fcde6-16b7-4c11-8539-625df20baabe",
+    "orgName": "tinaba",
+    "userId": "7zQfwX0dY2mHLCk7Kr",
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "userName": "tinaba",
+    "subscription": null,
+    "userEmail": "tinaba96.ca@gmail.com",
+    "serviceProviderAwsCredentials": "<REDACTED>",
+    "serviceProviderAwsAccountId": "010438495965",
+    "versionSf": "4.1.17",
+    "serviceProviderAwsCfStackName": "image-classification-dev",
+    "serviceProviderAwsCfStackId": null,
+    "serviceProviderAwsCfStackCreated": null,
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": null,
+    "serviceProviderAwsCfStackOutputs": null
+  }
+}

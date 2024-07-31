@@ -14,7 +14,9 @@ import (
 import (
 	"fmt"
 	"log"
+	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/tinaba96/taka-ultimate-fashion/backend/router"
 	"github.com/tinaba96/taka-ultimate-fashion/backend/scraper"
 	"gorm.io/driver/mysql"
@@ -68,10 +70,20 @@ func main() {
 	// ====== API =======
 	log.Println("start server...")
 	router := router.SetRouter()
+	
+	// router.GET("/", func(c *gin.Context) {
+    //     // for test
+    //     c.String(200, "Hello, this is a test response!")
+    // })
+	router.LoadHTMLGlob("index.html")
+	router.GET("/", func(c *gin.Context) {
+        c.HTML(http.StatusOK, "index.html", gin.H{})
+        // c.String(200, "Hello, this is a test response!")
+    })
+
 	if err := router.Run(":8080"); err != nil {
 		log.Fatal(err)
 	}
-
 
 	// ====== Python Execution =======
 	// cmd := exec.Command("python3", "deep_learning/keras.py")
@@ -103,7 +115,7 @@ func main() {
 
 	// Migrate the schema
 	// if !db.Migrator().HasTable(&Product{}) && !db.Migrator().HasTable(&Category{}) && !db.Migrator().HasTable(&Save{}) {
-	// db.AutoMigrate(&Product{}, &Category{}, &Save{})
+	db.AutoMigrate(&Product{}, &Category{}, &Save{})
 		// Master Category Data
 	db.FirstOrCreate(&Category{Name: "T-SHIRTS"})
 	db.FirstOrCreate(&Category{Name: "SWIMWEAR"})

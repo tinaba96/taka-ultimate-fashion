@@ -74,7 +74,7 @@
     "HelloLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/aws/lambda/tf-test-dev-hello"
+        "LogGroupName": "/aws/lambda/tf-ai-dev-hello"
       }
     },
     "IamRoleLambdaExecution": {
@@ -102,7 +102,7 @@
               "Fn::Join": [
                 "-",
                 [
-                  "tf-test",
+                  "tf-ai",
                   "dev",
                   "lambda"
                 ]
@@ -120,7 +120,7 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tf-test-dev*:*"
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tf-ai-dev*:*"
                     }
                   ]
                 },
@@ -131,9 +131,17 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tf-test-dev*:*:*"
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/tf-ai-dev*:*:*"
                     }
                   ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket",
+                    "s3:GetObject"
+                  ],
+                  "Resource": "arn:aws:s3::*"
                 }
               ]
             }
@@ -144,7 +152,7 @@
           "Fn::Join": [
             "-",
             [
-              "tf-test",
+              "tf-ai",
               "dev",
               {
                 "Ref": "AWS::Region"
@@ -159,10 +167,10 @@
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
-          "ImageUri": "010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:57b51592b0292e1ddbc720bfeaad546a3ce204c5e194995703c9b6a2fe6dc342"
+          "ImageUri": "010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:2b281f97529972c142de5653f9baecf4e07f4296e81de51a66225b5bdf087b57"
         },
         "PackageType": "Image",
-        "FunctionName": "tf-test-dev-hello",
+        "FunctionName": "tf-ai-dev-hello",
         "MemorySize": 2048,
         "Timeout": 180,
         "Role": {
@@ -176,14 +184,14 @@
         "HelloLogGroup"
       ]
     },
-    "HelloLambdaVersionqSlrq8vzXTS5u9tr8tJQk8yQd2WgvXl8HzdmEIdxY": {
+    "HelloLambdaVersionHZ4ikL7Z7YaE3Wzwkl2hZs3clr9wp926RzyptAYCMl8": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "HelloLambdaFunction"
         },
-        "CodeSha256": "57b51592b0292e1ddbc720bfeaad546a3ce204c5e194995703c9b6a2fe6dc342"
+        "CodeSha256": "2b281f97529972c142de5653f9baecf4e07f4296e81de51a66225b5bdf087b57"
       }
     }
   },
@@ -193,16 +201,16 @@
         "Ref": "ServerlessDeploymentBucket"
       },
       "Export": {
-        "Name": "sls-tf-test-dev-ServerlessDeploymentBucketName"
+        "Name": "sls-tf-ai-dev-ServerlessDeploymentBucketName"
       }
     },
     "HelloLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "HelloLambdaVersionqSlrq8vzXTS5u9tr8tJQk8yQd2WgvXl8HzdmEIdxY"
+        "Ref": "HelloLambdaVersionHZ4ikL7Z7YaE3Wzwkl2hZs3clr9wp926RzyptAYCMl8"
       },
       "Export": {
-        "Name": "sls-tf-test-dev-HelloLambdaFunctionQualifiedArn"
+        "Name": "sls-tf-ai-dev-HelloLambdaFunctionQualifiedArn"
       }
     }
   }

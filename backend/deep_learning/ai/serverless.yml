@@ -1,12 +1,66 @@
-service: tf-test
+service: tf-ai
+
+# provider:
+#   name: aws
+#   stage: dev
+#   region: us-east-1
+
+# functions:
+#   hello:
+#     image: 010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:57b51592b0292e1ddbc720bfeaad546a3ce204c5e194995703c9b6a2fe6dc342
+#     memorySize: 2048
+#     timeout: 180
+
+# service: image-classification
+
+# plugins:
+#   - serverless-python-requirements
+
+# custom:
+#   pythonRequirements:
+#     dockerizePip: true
+#     zip: true
+#     slim: true
+#     slimPatterns:
+#       - "**/debug"
+#       - "**/grpc"
+#       - "**/h5py"
+#       - "**/markdown"
+#       - "**/numpy"
+#       - "**/pkg_resources"
+#       - "**/setuptools"
+#       - "**/tensorboard/plugins"
+#       - "**/tensorboard/webfiles.zip"
+#       - "**/tensorflow_core/contrib"
+#       - "**/tensorflow_core/examples"
+#       - "**/tensorflow_core/include"
+#       - "**/tensorflow_estimator"
+#       - "**/werkzeug"
+#       - "**/wheel"
+#   requirementsService: image-classification-layer
+#   requirementsExport: ImageClassificationLayer
+#   requirementsLayer: ${cf:${self:custom.requirementsService}-${self:provider.stage}.${self:custom.requirementsExport}}
+
 
 provider:
   name: aws
   stage: dev
   region: us-east-1
+  iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - s3:ListBucket
+          - s3:GetObject
+        Resource:
+          - "arn:aws:s3::*"
+  # ecr:
+  #   images:
+  #     appimage:
+  #       path: ./
+  #       platform: linux/amd64
 
 functions:
   hello:
-    image: 010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:57b51592b0292e1ddbc720bfeaad546a3ce204c5e194995703c9b6a2fe6dc342
+    image: 010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:2b281f97529972c142de5653f9baecf4e07f4296e81de51a66225b5bdf087b57
     memorySize: 2048
     timeout: 180

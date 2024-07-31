@@ -1,0 +1,26 @@
+service: image-classification-layer
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+    layer:
+      compatibleRuntimes:
+        - python3.6
+    slim: true
+    strip: false
+    slimPatterns:
+      - "**/tests"
+
+provider:
+  name: aws
+  runtime: python3.6
+  stage: dev
+  region: us-east-1
+
+resources:
+  Outputs:
+    ImageClassificationLayer:
+      Value:
+        Ref: PythonRequirementsLambdaLayer
