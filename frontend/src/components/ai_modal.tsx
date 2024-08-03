@@ -8,14 +8,11 @@ interface Product {
     Price: string;
 }
 
-interface Save {
-    ID: number;
-    ProductID: number;
-    Product: Product;
-}
-
 interface SaveResponse {
-    datas: Save[];
+  statusCode: number;
+  body: {
+    products: Product[];
+  };
 }
 
 interface AIModalProps {
@@ -23,20 +20,26 @@ interface AIModalProps {
     setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
   }
 
-const apiUrl = process.env.REACT_APP_API_URL;
+// const apiUrl = process.env.REACT_APP_API_URL;
 
 const AIModal: React.FC<AIModalProps> = ({ showModal, setShowModal }) => {
 //   const [showModal, setShowModal] = useState<boolean>(false);
-  const [save, setSaves]  = useState<Product[]>([])
+const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [ai, setAi]  = useState<Product[]>([])
 
   useEffect(() => {
-    fetch(`${apiUrl}/getSave`)
+    // fetch(`${apiUrl}/getSave`)
+    fetch('https://a4qu0cj142.execute-api.us-east-1.amazonaws.com/tuf-ai')
     .then(response => response.json())
     .then((data: SaveResponse) => {
-        var saveProducts = data.datas.map((d: Save) => d.Product)
-        setSaves(saveProducts)
+      console.log('data.body')
+      console.log(data.body)
+      setIsLoading(false);
+        // // var saveProducts = data.datas.map((d: Save) => d.Product)
+      setAi(data.body.products)
     })
     .catch(error => {
+      setIsLoading(false);
         console.error('Request Error(Please check the response type):', error);
     });
 },[])
@@ -67,16 +70,18 @@ const AIModal: React.FC<AIModalProps> = ({ showModal, setShowModal }) => {
       style={customStyles}
           isOpen={showModal}
       onRequestClose={closeModal}>
-        <h1 className="py-10 text-2xl header-title">AI Recommend</h1>
+        <h1 className="pt-10 text-2xl header-title">AI Recommend</h1>
+        <p className="pb-1">This is an AI recommendation based on the 'Favorites' items.</p>
+        {isLoading && <p className='pb-10'>Please wait for AI...</p>}
         
             <div  className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-            {save.length !== 0 ? (
-              save.map((product) => (
+            {ai.length !== 0 ? (
+              ai.map((product) => (
                   <div key={product.ID} className="group relative">
                   <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-80">
                       <img
                         alt={product.Name}
-                        src={`https://oldnavy.gapcanada.ca/${product.ImageURL}`}
+                        src={`${product.ImageURL}`}
                         className="h-full w-full object-cover object-center lg:h-full lg:w-full"
                       />
                   </div>
