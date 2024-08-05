@@ -23,33 +23,62 @@ def cos_sim(v1, v2):
 
 
 def handler(event, context):
+    start_time = time.time()
     products = []
+    uniq = set()
     response = boto3.client('lambda').invoke(
         FunctionName = 'test2',
         InvocationType='RequestResponse'
     )
     rds = json.loads(response['Payload'].read())
-    time.sleep(5) 
-    OBJECT_KEY_NAME = 'products-images/product_image_'+'1128'+'.jpg'
-    response = s3_client.get_object(Bucket=BUCKET_NAME, Key=OBJECT_KEY_NAME)
-    body = response['Body'].read()
-    img = image2vec(body)
-    for i in rds['body']:
-        products.append(i[0])
-        OBJECT_KEY_NAME2 = 'products-images/product_image_'+str(i)+'.jpg'
-        response2 = s3_client.get_object(Bucket=BUCKET_NAME, Key=OBJECT_KEY_NAME2)
-        body2 = response2['Body'].read()
-        img2 = image2vec(body2)
-        diff = cos_sim(img, img2)
-        print(diff)
+    time.sleep(2) 
+    # print(rds['body']['all'])
+    for i in rds['body']['saves']:
+        OBJECT_KEY_NAME = 'products-images/product_image_'+str(i[0])+'.jpg'
+        response = s3_client.get_object(Bucket=BUCKET_NAME, Key=OBJECT_KEY_NAME)
+        body = response['Body'].read()
+        img = image2vec(body)
+        # print(rds['body']['all'][str(i[1])])
+        for k in rds['body']['all'][str(i[1])]:
+            if time.time() - start_time > 10:
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Access-Control-Allow-Headers': 'Content-Type',
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+                    },
+                    'body':
+                        {
+                            'products': list(products)
+                        }
+                }
+            OBJECT_KEY_NAME2 = 'products-images/product_image_'+str(k[0])+'.jpg'
+            response2 = s3_client.get_object(Bucket=BUCKET_NAME, Key=OBJECT_KEY_NAME2)
+            body2 = response2['Body'].read()
+            img2 = image2vec(body2)
+            diff = cos_sim(img, img2)
+            # print(diff)
+            if diff > 0.85 and i[0] != k[0] and k[0] not in uniq:
+                uniq.add(k[0])
+                item = {
+                    'ID': k[0],
+                    'Name': k[1],
+                    'ImageURL': k[2],
+                    'Price': k[3]
+                }
+                products.append(item)
+
     
-        # print(img)
-        # print(rds)
     return {
         'statusCode': 200,
+        'headers': {
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Allow-Origin': 'https://www.example.com',
+            'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+        },
         'body':
             {
-                # 'predict': tf.__version__,
-                'product_id': [4, 33, 45]
+                'products': products
             }
     }
