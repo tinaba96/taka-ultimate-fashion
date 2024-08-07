@@ -61,6 +61,6 @@ provider:
 
 functions:
   hello:
-    image: 010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:2b281f97529972c142de5653f9baecf4e07f4296e81de51a66225b5bdf087b57
+    image: 010438495965.dkr.ecr.us-east-1.amazonaws.com/tuf@sha256:f5d3f3bc12b3997957b6b518e357df04899e417e9ec66461e1e78a88fd0f66b9
     memorySize: 2048
     timeout: 180
