@@ -176,11 +176,6 @@ const Home: React.FC = () => {
 
   return (
     <div>
-      
-      
-    
-
-
 
       <AIModal showModal={showModal} setShowModal={setShowModal} />
         <div className="max-w-2xl mx-auto py-0 sm:px-6 sm:py-16 lg:max-w-7xl lg:px-8">
