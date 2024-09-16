@@ -1,0 +1,15 @@
+package main
+
+// #cgo CFLAGS: -I/Library/Frameworks/Python.framework/Versions/3.9/include/python3.9
+// #cgo LDFLAGS: -L/Library/Frameworks/Python.framework/Versions/3.9/lib -lpython3.9
+// #include <Python.h>
+
+import (
+	"C"
+)
+import "github.com/tinaba96/taka-ultimate-fashion/backend/scraper"
+
+func main () {
+	scraper.Scraper2()
+
+}

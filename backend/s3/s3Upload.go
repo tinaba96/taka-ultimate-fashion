@@ -24,7 +24,7 @@ func UploadToS3(productId int) {
 	}
 	defer file.Close()
 
-	bucketName := "tuf-products-data"
+	bucketName := "tuf-products-data-local"
 	objectKey := "products-images/product_image_" + strconv.Itoa(productId) +".jpg"
 	awsRegion := "us-east-1"
 
