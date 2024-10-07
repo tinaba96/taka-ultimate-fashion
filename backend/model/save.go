@@ -61,6 +61,7 @@ func SaveProducsst() (products []Product) {
 	if result.Error != nil {
 		panic(result.Error)
 	}
+	database.Close()
 	return
 	// return result
 }
@@ -73,6 +74,7 @@ func GetAllSaveProduct() (saves []Save) {
 	if result.Error != nil {
 		panic(result.Error)
 	}
+	database.Close()
 	return
 }
 
@@ -110,6 +112,7 @@ func PostProduct(requestBody RequestBodyType) (error) {
 		}
 	}
 
+	database.Close()
 	return nil
 
 }

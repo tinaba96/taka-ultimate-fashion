@@ -51,6 +51,7 @@ func GetAll() (products []Product) {
 	if result.Error != nil {
 		panic(result.Error)
 	}
+	database.Close()
 	return
 	// return result
 }
@@ -92,6 +93,7 @@ func GetByCategories(categoryNames []string, minPrice string, maxPrice string) (
 		return nil, err
 	}
 }
+	database.Close()
 	return products, nil
 }
 
@@ -116,5 +118,6 @@ func GetByCostRange(categoryNames []string) ([]Product, error) {
 	if err := db.Where("category_id IN ?", categoryIDs).Find(&products).Error; err != nil {
 		return nil, err
 	}
+	database.Close()
 	return products, nil
 }
