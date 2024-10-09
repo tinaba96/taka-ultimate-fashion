@@ -20,7 +20,9 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	s3Upload "github.com/tinaba96/taka-ultimate-fashion/backend/s3"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 
 	"github.com/sclevine/agouti"
 	"gorm.io/driver/mysql"
@@ -86,7 +88,8 @@ func Scraper() {
 
 	// ====== start scraping =======
 	// url := "https://oldnavy.gapcanada.ca/browse/category.do?cid=5249&mlink=5155,1,m_5" // specify the URL
-	url := "https://oldnavy.gapcanada.ca/browse/category.do?cid=5199&mlink=5155,1,m_6"
+	// url := "https://oldnavy.gapcanada.ca/browse/category.do?cid=5199&mlink=5155,1,m_6"
+	url := "https://oldnavy.gapcanada.ca/browse/category.do?cid=66124&mlink=5155,1,m_3"
 
 	// driver := agouti.ChromeDriver()                                // Start the driver
 	driver := agouti.ChromeDriver(
@@ -159,7 +162,8 @@ func Scraper() {
 
 			var productCategory Category
 			// db.FirstOrCreate(&productCategory, Category{Name: "T-SHIRTS"}) 
-			db.FirstOrCreate(&productCategory, Category{Name: "JEANS"}) 
+			// db.FirstOrCreate(&productCategory, Category{Name: "JEANS"}) 
+			db.FirstOrCreate(&productCategory, Category{Name: "SWIMWEAR"}) 
 
 			product := Product{
 				Name:     productName,
@@ -176,8 +180,7 @@ func Scraper() {
 					fmt.Printf("Saved Product: %s, Price: %s, Image Src: %s\n", productName, price, imgSrc)
 					im := `https://oldnavy.gapcanada.ca/`+imgSrc
 					saveimg(int(product.ID), im)
-					// log.Println(im)
-					s3Upload.UploadToS3(int(product.ID))
+					// s3Upload.UploadToS3(int(product.ID))
 				}
 				fmt.Printf("Product: %s, Price: %s, Image Src: %s\n", productName, price, imgSrc)
 			}
@@ -187,64 +190,64 @@ func Scraper() {
 		log.Println("Scraping Completed")
 	}
 
-	// // sess, _ := session.NewSession(&aws.Config{
-	// // 	Region: aws.String("us-west-1")},
-	// // )
-	// sess := session.Must(session.NewSessionWithOptions(session.Options{
-	// 	// Profile:           "di",
-	// 	SharedConfigState: session.SharedConfigEnable,
-	// 	// Config: aws.Config{
-	// 	// 	Region: aws.String("us-west-1"),
-	// 	// },
-	// }))
-	// 	targetFilePath := "./product_image_1.jpg"
-	// file, err := os.Open(targetFilePath)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer file.Close()
+	// sess, _ := session.NewSession(&aws.Config{
+	// 	Region: aws.String("us-west-1")},
+	// )
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		// Profile:           "di",
+		SharedConfigState: session.SharedConfigEnable,
+		// Config: aws.Config{
+		// 	Region: aws.String("us-west-1"),
+		// },
+	}))
+		targetFilePath := "./product_image_1.jpg"
+	file, err := os.Open(targetFilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
 
-	// bucketName := "tuf-products-data"
-	// objectKey := "products-images/"
-	// awsRegion := "us-east-1"
+	bucketName := "tuf-products-data"
+	objectKey := "products-images/"
+	awsRegion := "us-east-1"
 
-	// // Uploaderを作成し、ローカルファイルをアップロード
-	// // uploader := s3manager.NewUploader(sess)
-	// // _, err = uploader.Upload(&s3manager.UploadInput{
-	// // 	Bucket: aws.String(bucketName),
-	// // 	Key:    aws.String(objectKey),
-	// // 	Body:   file,
-	// // })
-	// // if err != nil {
-	// // 	log.Fatal(err)
-	// // }
-	
-	// // if err := s3.Put(bucketName, objectKey, file); err != nil {
-	// // 	panic(err)
-	// // }
-
-	// // S3クライアントを作成します
-	// svc := s3.New(sess, &aws.Config{
-	// 	Region: aws.String(awsRegion),
-	// })
-
-	// // S3にアップロードする内容をparamsに入れます
-	// params := &s3.PutObjectInput{
-	// 	// Bucket アップロード先のS3のバケット
+	// Uploaderを作成し、ローカルファイルをアップロード
+	// uploader := s3manager.NewUploader(sess)
+	// _, err = uploader.Upload(&s3manager.UploadInput{
 	// 	Bucket: aws.String(bucketName),
-	// 	// Key アップロードする際のオブジェクト名
-	// 	Key: aws.String(objectKey),
-	// 	// Body アップロードする画像ファイル
-	// 	Body: file,
-	// }
-
-	// // S3にアップロードします
-	// _, err = svc.PutObject(params)
+	// 	Key:    aws.String(objectKey),
+	// 	Body:   file,
+	// })
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
+	
+	// if err := s3.Put(bucketName, objectKey, file); err != nil {
+	// 	panic(err)
+	// }
 
-	// log.Println("S3 done! You are AMAZING!!")
+	// S3クライアントを作成します
+	svc := s3.New(sess, &aws.Config{
+		Region: aws.String(awsRegion),
+	})
+
+	// S3にアップロードする内容をparamsに入れます
+	params := &s3.PutObjectInput{
+		// Bucket アップロード先のS3のバケット
+		Bucket: aws.String(bucketName),
+		// Key アップロードする際のオブジェクト名
+		Key: aws.String(objectKey),
+		// Body アップロードする画像ファイル
+		Body: file,
+	}
+
+	// S3にアップロードします
+	_, err = svc.PutObject(params)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("S3 done! You are AMAZING!!")
 	
 }
 
